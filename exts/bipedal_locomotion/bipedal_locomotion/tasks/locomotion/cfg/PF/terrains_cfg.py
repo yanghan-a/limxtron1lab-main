@@ -207,6 +207,8 @@ BLIND_ROUGH_TERRAINS_PLAY_CFG = TerrainGeneratorCfg(
     curriculum=False,                   # 测试时不使用课程学习 / No curriculum for testing
     difficulty_range=(1.0, 1.0),       # 固定最高难度 / Fixed maximum difficulty
     # difficulty_range=(0.8, 1.0),       # 固定最高难度 / Fixed maximum difficulty
+
+    #print(a)
 )
 
 
