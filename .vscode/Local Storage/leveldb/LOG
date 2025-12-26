@@ -1,2 +1,3 @@
-2025/12/26-14:00:57.880 3668 Creating DB /root/limxtron1lab-main/.vscode/Local Storage/leveldb since it was missing.
-2025/12/26-14:00:57.886 3668 Reusing MANIFEST /root/limxtron1lab-main/.vscode/Local Storage/leveldb/MANIFEST-000001
+2025/12/26-15:49:46.410 5815 Reusing MANIFEST /root/limxtron1lab-main/.vscode/Local Storage/leveldb/MANIFEST-000001
+2025/12/26-15:49:46.413 5815 Recovering log #3
+2025/12/26-15:49:46.414 5815 Reusing old log /root/limxtron1lab-main/.vscode/Local Storage/leveldb/000003.log 

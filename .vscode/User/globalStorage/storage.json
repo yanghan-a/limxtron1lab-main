@@ -9,11 +9,7 @@
                 "folderUri": "file:///root/limxtron1lab-main"
             }
         ],
-        "emptyWindows": [
-            {
-                "backupFolder": "1766728858718"
-            }
-        ]
+        "emptyWindows": []
     },
     "windowControlHeight": 35,
     "profileAssociations": {
@@ -57,11 +53,11 @@
             "folder": "file:///root/limxtron1lab-main",
             "backupPath": "/root/limxtron1lab-main/.vscode/Backups/ae6e1dbf101963deb7ff5228e25c6a44",
             "uiState": {
-                "mode": 1,
-                "x": 676,
-                "y": 261,
-                "width": 1200,
-                "height": 800
+                "mode": 0,
+                "x": 70,
+                "y": 32,
+                "width": 2482,
+                "height": 1290
             }
         },
         "openedWindows": []
