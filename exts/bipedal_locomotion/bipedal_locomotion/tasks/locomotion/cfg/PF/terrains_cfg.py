@@ -18,13 +18,13 @@ from isaaclab.terrains import (
 # Blind rough terrain configuration - for training without vision sensors
 BLIND_ROUGH_TERRAINS_CFG = TerrainGeneratorCfg(
     seed=42,                        # 随机种子确保可重复性 / Random seed for reproducibility
-    #size=(8.0, 8.0),               # 每个地形块大小 8x8米 / Each terrain tile size 8x8 meters
-    size=(6.0, 6.0),               # 每个地形块大小 8x8米 / Each terrain tile size 8x8 meters
+    size=(8.0, 8.0),               # 每个地形块大小 8x8米 / Each terrain tile size 8x8 meters
+    # size=(6.0, 6.0),               # 每个地形块大小 8x8米 / Each terrain tile size 8x8 meters
     border_width=20.0,              # 边界宽度 / Border width
-    # num_rows=10,                    # 地形行数 / Number of terrain rows
+    num_rows=10,                    # 地形行数 / Number of terrain rows
     # num_cols=16,                    # 地形列数 / Number of terrain columns
-    num_rows=20,                    # 地形行数 / Number of terrain rows
-    num_cols=32,                    # 地形列数 / Number of terrain columns
+    # num_rows=20,                    # 地形行数 / Number of terrain rows
+    num_cols=20,                    # 地形列数 / Number of terrain columns
     horizontal_scale=0.1,           # 水平分辨率 / Horizontal resolution
     vertical_scale=0.005,           # 垂直分辨率 / Vertical resolution
     slope_threshold=0.75,           # 斜率阈值 / Slope threshold
@@ -126,15 +126,15 @@ BLIND_ROUGH_TERRAINS_PLAY_CFG = TerrainGeneratorCfg(
     seed=42,
     size=(8.0, 8.0),
     border_width=20.0,
-    num_rows=4,                         # 减少行数用于测试 / Reduced rows for testing
-    num_cols=4,                         # 减少列数用于测试 / Reduced columns for testing
+    num_rows=10,                         # 减少行数用于测试 / Reduced rows for testing
+    num_cols=3,                         # 减少列数用于测试 / Reduced columns for testing
     horizontal_scale=0.1,
     vertical_scale=0.005,
     slope_threshold=0.75,
     use_cache=True,
     
     sub_terrains={
-        # # 只保留三种地形类型 / Only keep three terrain types
+        # 只保留三种地形类型 / Only keep three terrain types
         # "waves": HfWaveTerrainCfg(
         #     proportion=0.33,                # 33%占比 / 33% proportion
         #     amplitude_range=(0.01, 0.06), 
@@ -205,8 +205,8 @@ BLIND_ROUGH_TERRAINS_PLAY_CFG = TerrainGeneratorCfg(
     },
     
     curriculum=False,                   # 测试时不使用课程学习 / No curriculum for testing
-    # difficulty_range=(1.0, 1.0),       # 固定最高难度 / Fixed maximum difficulty
-    difficulty_range=(0.6, 1.0),       # 固定最高难度 / Fixed maximum difficulty
+    difficulty_range=(1.0, 1.0),       # 固定最高难度 / Fixed maximum difficulty
+    # difficulty_range=(0.8, 1.0),       # 固定最高难度 / Fixed maximum difficulty
 )
 
 
