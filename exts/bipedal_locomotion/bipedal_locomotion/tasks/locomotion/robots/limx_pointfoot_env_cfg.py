@@ -147,17 +147,17 @@ class PFBlindStairEnvCfg(PFBaseEnvCfg):
         self.observations.critic.heights = None
 
         # 调整速度命令范围以适应楼梯环境 / Adjust velocity command ranges for stairs environment
-        self.commands.base_velocity.ranges.lin_vel_x = (0.5, 1.0)      # 前进速度：0.5-1.0 m/s / Forward velocity: 0.5-1.0 m/s
+        self.commands.base_velocity.ranges.lin_vel_x = (0.5, 0.6)      # 前进速度：0.5-1.0 m/s / Forward velocity: 0.5-1.0 m/s
         self.commands.base_velocity.ranges.lin_vel_y = (-0.0, 0.0)     # 横向速度：0（仅直行）/ Lateral velocity: 0 (straight only)
         self.commands.base_velocity.ranges.ang_vel_z = (-math.pi / 6, math.pi / 6)  # 转向：±30度 / Turning: ±30 degrees
 
         # 调整奖励权重以适应楼梯爬升 / Adjust reward weights for stair climbing
         self.rewards.rew_lin_vel_xy.weight = 2.0          # 增加线速度跟踪奖励 / Increase linear velocity tracking reward
         self.rewards.rew_ang_vel_z.weight = 1.5           # 增加角速度跟踪奖励 / Increase angular velocity tracking reward
-        self.rewards.pen_lin_vel_z.weight = -1.0          # 增加Z方向速度惩罚 / Increase Z velocity penalty
+        self.rewards.pen_lin_vel_z.weight = 0.1          # 增加Z方向速度惩罚 / Increase Z velocity penalty
         self.rewards.pen_ang_vel_xy.weight = -0.05        # XY角速度惩罚 / XY angular velocity penalty
         self.rewards.pen_action_rate.weight = -0.01       # 动作变化率惩罚 / Action rate penalty
-        self.rewards.pen_flat_orientation.weight = -2.5   # 姿态保持惩罚 / Orientation keeping penalty
+        self.rewards.pen_flat_orientation.weight = -5   # 姿态保持惩罚 / Orientation keeping penalty
         self.rewards.pen_undesired_contacts.weight = -1.0 # 不期望接触惩罚 / Undesired contact penalty
 
         # 设置楼梯地形 / Set up stairs terrain
