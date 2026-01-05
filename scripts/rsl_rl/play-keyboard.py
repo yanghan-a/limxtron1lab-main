@@ -75,8 +75,8 @@ class ManualController:
         self.device = device
         self.linear_velocity = torch.zeros(3, device=device)
         self.angular_velocity = torch.zeros(3, device=device)
-        self.max_linear_vel = 1.0
-        self.max_angular_vel = 1.0
+        self.max_linear_vel = 1.8
+        self.max_angular_vel = 1.5
         
     def get_velocity_command(self):
         """Return SE2 command [vx, vy, wz] in robot base frame."""
@@ -236,6 +236,10 @@ def main():
     
     # Initialize velocity tracking for MSE calculation
     velocity_errors_squared = []
+    
+    # Initialize loop timing measurement
+    loop_times = []
+    last_loop_time = time.time()
 
     # reset environment
     obs, obs_dict = env.get_observations()
@@ -244,7 +248,11 @@ def main():
     commands = obs_dict["observations"].get("commands") 
     # simulate environment
     while simulation_app.is_running():
-        start_time = time.time()
+        # Measure loop timing
+        current_time = time.time()
+        loop_dt = current_time - last_loop_time
+        loop_times.append(loop_dt)
+        last_loop_time = current_time
 
         # Check for exit
         if keyboard and keyboard.is_pressed('esc'):
@@ -400,14 +408,18 @@ def main():
         
         velocity_errors_squared.append(total_vel_mse)
         
-        # Print velocity tracking info every 50 steps
+        # Print velocity tracking info every 100 steps
         if timestep % 100 == 0:
             avg_mse = np.mean(velocity_errors_squared[-50:]) if len(velocity_errors_squared) >= 50 else np.mean(velocity_errors_squared)
+            avg_loop_time = np.mean(loop_times[-100:]) if len(loop_times) >= 100 else np.mean(loop_times)
+            avg_loop_freq = 1.0 / avg_loop_time if avg_loop_time > 0 else 0
+            
             print(f"\n[Step {timestep}] Velocity Tracking:")
             print(f"  Desired: vx={desired_vel[0].item():.3f}, vy={desired_vel[1].item():.3f}, wz={desired_vel[2].item():.3f}")
             print(f"  Actual:  vx={actual_lin_vel[0].item():.3f}, vy={actual_lin_vel[1].item():.3f}, wz={actual_ang_vel.item():.3f}")
             print(f"  Error:   vx={lin_vel_error[0].item():.3f}, vy={lin_vel_error[1].item():.3f}, wz={ang_vel_error.item():.3f}")
             print(f"  MSE (last 50 steps): {avg_mse:.6f}")
+            print(f"  Loop timing: {avg_loop_time*1000:.2f}ms ({avg_loop_freq:.1f} Hz)")
         
         timestep += 1 
 
@@ -417,11 +429,18 @@ def main():
     # Print final statistics
     if len(velocity_errors_squared) > 0:
         overall_mse = np.mean(velocity_errors_squared)
+        avg_loop_time = np.mean(loop_times[1:]) if len(loop_times) > 1 else 0  # Skip first measurement
+        avg_loop_freq = 1.0 / avg_loop_time if avg_loop_time > 0 else 0
+        
         print(f"\n{'='*60}")
         print(f"[FINAL STATISTICS]")
         print(f"  Total timesteps: {timestep}")
         print(f"  Overall Velocity Tracking MSE: {overall_mse:.6f}")
         print(f"  Overall Velocity Tracking RMSE: {np.sqrt(overall_mse):.6f}")
+        print(f"  Average loop time: {avg_loop_time*1000:.2f}ms ({avg_loop_freq:.1f} Hz)")
+        print(f"  Physics dt: {env.unwrapped.physics_dt*1000:.2f}ms ({1.0/env.unwrapped.physics_dt:.0f} Hz)")
+        print(f"  Control decimation: {env.unwrapped.cfg.decimation}")
+        print(f"  Control dt: {env.unwrapped.step_dt*1000:.2f}ms ({1.0/env.unwrapped.step_dt:.1f} Hz)")
         print(f"{'='*60}\n")
 
     # close the simulator
