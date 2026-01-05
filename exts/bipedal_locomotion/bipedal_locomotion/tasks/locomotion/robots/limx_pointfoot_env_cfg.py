@@ -66,6 +66,14 @@ class PFBaseEnvCfg_PLAY(PFBaseEnvCfg):
         self.events.push_robot = None
         # remove random base mass addition event
         self.events.add_base_mass = None
+        self.commands.base_velocity.resampling_time_range = (1000000.0, 1000000.0)  # 速度命令重采样时间 / Velocity command resampling time
+
+        self.commands.base_velocity.ranges = mdp.UniformVelocityCommandCfg.Ranges(
+            lin_vel_x=(0.0, 0.0), 
+            lin_vel_y=(0.0, 0.0), 
+            ang_vel_z=(0.0, 0.0), 
+            heading=(0.0, 0.0)
+        )
 
 
 ############################
@@ -95,7 +103,16 @@ class PFBlindFlatEnvCfg_PLAY(PFBaseEnvCfg_PLAY):
         self.observations.critic.heights = None
 
         self.curriculum.terrain_levels = None
+        self.commands.base_velocity.resampling_time_range = (1000000.0, 1000000.0)  # 速度命令重采样时间 / Velocity command resampling time
+        # 时间超时终止 / Time out termination
+        self.terminations.time_out = None
 
+        self.commands.base_velocity.ranges = mdp.UniformVelocityCommandCfg.Ranges(
+            lin_vel_x=(0.0, 0.0), 
+            lin_vel_y=(0.0, 0.0), 
+            ang_vel_z=(0.0, 0.0), 
+            heading=(0.0, 0.0)
+        )
 
 #############################
 # 双足机器人盲视粗糙环境 / Pointfoot Blind Rough Environment
@@ -131,6 +148,16 @@ class PFBlindRoughEnvCfg_PLAY(PFBaseEnvCfg_PLAY):
         # self.scene.terrain.terrain_generator = BLIND_ROUGH_TERRAINS_PLAY_CFG
         self.scene.terrain.terrain_generator = BLIND_HARD_ROUGH_TERRAINS_PLAY_CFG
 
+        self.commands.base_velocity.resampling_time_range = (1000000.0, 1000000.0)  # 速度命令重采样时间 / Velocity command resampling time
+        # 时间超时终止 / Time out termination
+        self.terminations.time_out = None
+
+        self.commands.base_velocity.ranges = mdp.UniformVelocityCommandCfg.Ranges(
+            lin_vel_x=(0.0, 0.0), 
+            lin_vel_y=(0.0, 0.0), 
+            ang_vel_z=(0.0, 0.0), 
+            heading=(0.0, 0.0)
+        )
 
 
 ##############################
@@ -195,6 +222,18 @@ class PFBlindStairEnvCfg_PLAY(PFBaseEnvCfg_PLAY):
         self.scene.terrain.max_init_terrain_level = None
         # 设置中等难度的楼梯测试环境 / Set medium difficulty stairs testing environment
         self.scene.terrain.terrain_generator = STAIRS_TERRAINS_PLAY_CFG.replace(difficulty_range=(0.5, 0.5))
+
+        self.commands.base_velocity.resampling_time_range = (1000000.0, 1000000.0)  # 速度命令重采样时间 / Velocity command resampling time
+
+        # 时间超时终止 / Time out termination
+        self.terminations.time_out = None
+
+        self.commands.base_velocity.ranges = mdp.UniformVelocityCommandCfg.Ranges(
+            lin_vel_x=(0.0, 0.0), 
+            lin_vel_y=(0.0, 0.0), 
+            ang_vel_z=(0.0, 0.0), 
+            heading=(0.0, 0.0)
+        )
 
 
 
@@ -261,7 +300,7 @@ class PFBlindStairEnvCfgMy(PFBaseEnvCfg):
 
         self.rewards.test_gait_reward.weight = 1.0
 
-        self.rewards.pen_feet_distance.weight = RewTerm(
+        self.rewards.pen_feet_distance = RewTerm(
             func=mdp.feet_distance,                     # 足部距离惩罚 / Foot distance penalty
             weight=-10,
             params={
@@ -305,6 +344,17 @@ class PFBlindStairEnvCfg_PLAYMy(PFBaseEnvCfg_PLAY):
         # 设置中等难度的楼梯测试环境 / Set medium difficulty stairs testing environment
         # self.scene.terrain.terrain_generator = STAIRS_TERRAINS_PLAY_CFG.replace(difficulty_range=(0.5, 0.5))
         self.scene.terrain.terrain_generator = STAIRS_TERRAINS_PLAY_CFG.replace(difficulty_range=(0.5, 1.0))
+
+        self.commands.base_velocity.resampling_time_range = (1000000.0, 1000000.0)  # 速度命令重采样时间 / Velocity command resampling time
+        # 时间超时终止 / Time out termination
+        self.terminations.time_out = None
+
+        self.commands.base_velocity.ranges = mdp.UniformVelocityCommandCfg.Ranges(
+            lin_vel_x=(0.0, 0.0), 
+            lin_vel_y=(0.0, 0.0), 
+            ang_vel_z=(0.0, 0.0), 
+            heading=(0.0, 0.0)
+        )
 
 
 
