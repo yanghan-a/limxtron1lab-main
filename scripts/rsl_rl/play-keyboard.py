@@ -75,8 +75,8 @@ class ManualController:
         self.device = device
         self.linear_velocity = torch.zeros(3, device=device)
         self.angular_velocity = torch.zeros(3, device=device)
-        self.max_linear_vel = 1.8
-        self.max_angular_vel = 1.5
+        self.max_linear_vel = 1.4
+        self.max_angular_vel = 1.0
         
     def get_velocity_command(self):
         """Return SE2 command [vx, vy, wz] in robot base frame."""
@@ -409,7 +409,7 @@ def main():
         velocity_errors_squared.append(total_vel_mse)
         
         # Print velocity tracking info every 100 steps
-        if timestep % 100 == 0:
+        if timestep % 10 == 0:
             avg_mse = np.mean(velocity_errors_squared[-50:]) if len(velocity_errors_squared) >= 50 else np.mean(velocity_errors_squared)
             avg_loop_time = np.mean(loop_times[-100:]) if len(loop_times) >= 100 else np.mean(loop_times)
             avg_loop_freq = 1.0 / avg_loop_time if avg_loop_time > 0 else 0

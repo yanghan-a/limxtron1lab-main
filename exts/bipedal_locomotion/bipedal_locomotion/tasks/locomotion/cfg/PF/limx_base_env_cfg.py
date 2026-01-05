@@ -95,8 +95,8 @@ class CommandCfg(BaseCommandsCfg):
         resampling_time_range=(5.0, 5.0),  # 命令重采样时间范围 (固定5秒) / Command resampling time range (fixed 5s)
         debug_vis=False,                    # 不显示调试可视化 / No debug visualization
         ranges=mdp.UniformGaitCommandCfg.Ranges(
-            # frequencies=(1.5, 2.5),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
-            frequencies=(2.2, 3.2),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
+            frequencies=(1.5, 2.5),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
+            # frequencies=(2.2, 3.2),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
             offsets=(0.5, 0.5),         # 相位偏移范围 [0-1] / Phase offset range [0-1]
             durations=(0.5, 0.5),       # 接触持续时间范围 [0-1] / Contact duration range [0-1]
             swing_height=(0.1, 0.2)     # 摆动高度范围 [m] / Swing height range [m]
@@ -409,10 +409,10 @@ class RewardsCfg:
 
     # tracking related rewards
     rew_lin_vel_xy = RewTerm(
-        func=mdp.track_lin_vel_xy_exp, weight=3.4, params={"command_name": "base_velocity", "std": math.sqrt(0.2)}
+        func=mdp.track_lin_vel_xy_exp, weight=3.0, params={"command_name": "base_velocity", "std": math.sqrt(0.2)}
     )
     rew_ang_vel_z = RewTerm(
-        func=mdp.track_ang_vel_z_exp, weight=1.8, params={"command_name": "base_velocity", "std": math.sqrt(0.2)}
+        func=mdp.track_ang_vel_z_exp, weight=1.5, params={"command_name": "base_velocity", "std": math.sqrt(0.2)}
     )
 
     # 调节相关奖励 / Regulation-related rewards
@@ -484,7 +484,7 @@ class RewardsCfg:
     # 步态奖励 / Gait reward
     test_gait_reward = RewTerm(
         func=mdp.GaitReward,                        # 步态奖励函数 / Gait reward function
-        weight=1.2,
+        weight=1.0,
         params={
             "tracking_contacts_shaped_force": -2.0,    # 接触力跟踪形状参数 / Contact force tracking shaping
             "tracking_contacts_shaped_vel": -2.0,      # 接触速度跟踪形状参数 / Contact velocity tracking shaping

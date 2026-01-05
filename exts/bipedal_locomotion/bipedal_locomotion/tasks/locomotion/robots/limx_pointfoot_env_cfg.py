@@ -58,7 +58,7 @@ class PFBaseEnvCfg_PLAY(PFBaseEnvCfg):
         super().__post_init__()
 
         # make a smaller scene for play
-        self.scene.num_envs = 32
+        self.scene.num_envs = 1
 
         # disable randomization for play
         self.observations.policy.enable_corruption = False
@@ -124,19 +124,43 @@ class PFBlindRoughEnvCfg(PFBaseEnvCfg):
     def __post_init__(self):
         super().__post_init__()
 
+        self.commands.gait_command= mdp.UniformGaitCommandCfg(
+            resampling_time_range=(5.0, 5.0),  # 命令重采样时间范围 (固定5秒) / Command resampling time range (fixed 5s)
+            debug_vis=False,                    # 不显示调试可视化 / No debug visualization
+            ranges=mdp.UniformGaitCommandCfg.Ranges(
+                # frequencies=(1.5, 2.5),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
+                frequencies=(5, 5),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
+                offsets=(0.5, 0.5),         # 相位偏移范围 [0-1] / Phase offset range [0-1]
+                durations=(0.5, 0.5),       # 接触持续时间范围 [0-1] / Contact duration range [0-1]
+                swing_height=(0.2, 0.3)     # 摆动高度范围 [m] / Swing height range [m]
+            ),
+        )
+
         self.scene.height_scanner = None
         self.observations.policy.heights = None
         self.observations.critic.heights = None
 
         self.scene.terrain.terrain_type = "generator"
-        # self.scene.terrain.terrain_generator = BLIND_ROUGH_TERRAINS_CFG
-        self.scene.terrain.terrain_generator = BLIND_HARD_ROUGH_TERRAINS_CFG
+        self.scene.terrain.terrain_generator = BLIND_ROUGH_TERRAINS_CFG
+        # self.scene.terrain.terrain_generator = BLIND_HARD_ROUGH_TERRAINS_CFG
 
 
 @configclass
 class PFBlindRoughEnvCfg_PLAY(PFBaseEnvCfg_PLAY):
     def __post_init__(self):
         super().__post_init__()
+
+        self.commands.gait_command= mdp.UniformGaitCommandCfg(
+            resampling_time_range=(5.0, 5.0),  # 命令重采样时间范围 (固定5秒) / Command resampling time range (fixed 5s)
+            debug_vis=False,                    # 不显示调试可视化 / No debug visualization
+            ranges=mdp.UniformGaitCommandCfg.Ranges(
+                # frequencies=(1.5, 2.5),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
+                frequencies=(5, 5),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
+                offsets=(0.5, 0.5),         # 相位偏移范围 [0-1] / Phase offset range [0-1]
+                durations=(0.5, 0.5),       # 接触持续时间范围 [0-1] / Contact duration range [0-1]
+                swing_height=(0.2, 0.3)     # 摆动高度范围 [m] / Swing height range [m]
+            ),
+        )
         
         self.scene.height_scanner = None
         self.observations.policy.heights = None
@@ -145,8 +169,8 @@ class PFBlindRoughEnvCfg_PLAY(PFBaseEnvCfg_PLAY):
         # spawn the robot randomly in the grid (instead of their terrain levels)
         self.scene.terrain.terrain_type = "generator"
         self.scene.terrain.max_init_terrain_level = None
-        # self.scene.terrain.terrain_generator = BLIND_ROUGH_TERRAINS_PLAY_CFG
-        self.scene.terrain.terrain_generator = BLIND_HARD_ROUGH_TERRAINS_PLAY_CFG
+        self.scene.terrain.terrain_generator = BLIND_ROUGH_TERRAINS_PLAY_CFG
+        # self.scene.terrain.terrain_generator = BLIND_HARD_ROUGH_TERRAINS_PLAY_CFG
 
         self.commands.base_velocity.resampling_time_range = (1000000.0, 1000000.0)  # 速度命令重采样时间 / Velocity command resampling time
         # 时间超时终止 / Time out termination
@@ -263,10 +287,10 @@ class PFBlindStairEnvCfgMy(PFBaseEnvCfg):
             debug_vis=False,                    # 不显示调试可视化 / No debug visualization
             ranges=mdp.UniformGaitCommandCfg.Ranges(
                 # frequencies=(1.5, 2.5),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
-                frequencies=(2.2, 3.2),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
+                frequencies=(1.5, 2.5),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
                 offsets=(0.5, 0.5),         # 相位偏移范围 [0-1] / Phase offset range [0-1]
                 durations=(0.5, 0.5),       # 接触持续时间范围 [0-1] / Contact duration range [0-1]
-                swing_height=(0.2, 0.3)     # 摆动高度范围 [m] / Swing height range [m]
+                swing_height=(0.1, 0.2)     # 摆动高度范围 [m] / Swing height range [m]
             ),
         )
 
@@ -291,7 +315,7 @@ class PFBlindStairEnvCfgMy(PFBaseEnvCfg):
 
         self.rewards.pen_joint_vel_l2.weight = -5.0e-05
         self.rewards.pen_joint_accel.weight = -2.5e-07
-        self.rewards.pen_joint_powers.weight = -2.5e-05
+        self.rewards.pen_joint_powers.weight = -2.0e-05
 
         self.rewards.pen_base_height.weight = -1.0
 
@@ -300,7 +324,7 @@ class PFBlindStairEnvCfgMy(PFBaseEnvCfg):
 
         self.rewards.test_gait_reward.weight = 1.0
 
-        self.rewards.pen_feet_distance.weight = -10.0
+        self.rewards.pen_feet_distance.weight = -4.0
 
         self.rewards.foot_landing_vel.weight = 0.0
         self.rewards.pen_feet_regulation.weight = 0.0
