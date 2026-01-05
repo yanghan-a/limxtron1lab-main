@@ -286,7 +286,8 @@ def main():
             #     cmd_term.is_standing_env[:] = False
             
             # [关键修改] 将键盘指令直接写入策略网络的输入张量
-            # [Key Fix] Overwrite the commands tensor fed to the policy
+            # [Key Fix] Clone the commands tensor to make it writable, then overwrite
+            commands = commands.clone()
             commands[:, :3] = velocity_cmd.unsqueeze(0)
 
         # Apply external force when 'p' is pressed
