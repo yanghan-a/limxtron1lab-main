@@ -9,6 +9,8 @@ from bipedal_locomotion.tasks.locomotion.cfg.PF.terrains_cfg import (
     BLIND_ROUGH_TERRAINS_PLAY_CFG,
     STAIRS_TERRAINS_CFG,
     STAIRS_TERRAINS_PLAY_CFG,
+    BLIND_HARD_ROUGH_TERRAINS_CFG,
+    BLIND_HARD_ROUGH_TERRAINS_PLAY_CFG,
 )
 
 from isaaclab.sensors import RayCasterCfg, patterns
@@ -110,7 +112,8 @@ class PFBlindRoughEnvCfg(PFBaseEnvCfg):
         self.observations.critic.heights = None
 
         self.scene.terrain.terrain_type = "generator"
-        self.scene.terrain.terrain_generator = BLIND_ROUGH_TERRAINS_CFG
+        # self.scene.terrain.terrain_generator = BLIND_ROUGH_TERRAINS_CFG
+        self.scene.terrain.terrain_generator = BLIND_HARD_ROUGH_TERRAINS_CFG
 
 
 @configclass
@@ -125,7 +128,9 @@ class PFBlindRoughEnvCfg_PLAY(PFBaseEnvCfg_PLAY):
         # spawn the robot randomly in the grid (instead of their terrain levels)
         self.scene.terrain.terrain_type = "generator"
         self.scene.terrain.max_init_terrain_level = None
-        self.scene.terrain.terrain_generator = BLIND_ROUGH_TERRAINS_PLAY_CFG
+        # self.scene.terrain.terrain_generator = BLIND_ROUGH_TERRAINS_PLAY_CFG
+        self.scene.terrain.terrain_generator = BLIND_HARD_ROUGH_TERRAINS_PLAY_CFG
+
 
 
 ##############################
@@ -147,7 +152,7 @@ class PFBlindStairEnvCfg(PFBaseEnvCfg):
         self.observations.critic.heights = None
 
         # 调整速度命令范围以适应楼梯环境 / Adjust velocity command ranges for stairs environment
-        self.commands.base_velocity.ranges.lin_vel_x = (0.5, 0.6)      # 前进速度：0.5-1.0 m/s / Forward velocity: 0.5-1.0 m/s
+        self.commands.base_velocity.ranges.lin_vel_x = (0.5, 1.0)      # 前进速度：0.5-1.0 m/s / Forward velocity: 0.5-1.0 m/s
         self.commands.base_velocity.ranges.lin_vel_y = (-0.0, 0.0)     # 横向速度：0（仅直行）/ Lateral velocity: 0 (straight only)
         self.commands.base_velocity.ranges.ang_vel_z = (-math.pi / 6, math.pi / 6)  # 转向：±30度 / Turning: ±30 degrees
 
@@ -190,6 +195,117 @@ class PFBlindStairEnvCfg_PLAY(PFBaseEnvCfg_PLAY):
         self.scene.terrain.max_init_terrain_level = None
         # 设置中等难度的楼梯测试环境 / Set medium difficulty stairs testing environment
         self.scene.terrain.terrain_generator = STAIRS_TERRAINS_PLAY_CFG.replace(difficulty_range=(0.5, 0.5))
+
+
+
+##############################
+# modifying the reward parameters双足机器人盲视楼梯环境 / Pointfoot Blind Stairs Environment
+##############################
+@configclass
+class PFBlindStairEnvCfgMy(PFBaseEnvCfg):
+    """盲视楼梯环境配置 - 专门训练爬楼梯能力 / Blind stairs environment configuration - specialized for stair climbing training"""
+    
+    def __post_init__(self):
+        """后初始化 - 配置楼梯训练环境 / Post-initialization - configure stairs training environment"""
+        super().__post_init__()
+        
+        # 移除视觉组件 / Remove vision components
+        self.scene.height_scanner = None
+        self.observations.policy.heights = None
+        self.observations.critic.heights = None
+
+        # 调整速度命令范围以适应楼梯环境 / Adjust velocity command ranges for stairs environment
+        self.commands.base_velocity.ranges.lin_vel_x = (0.5, 1.0)      # 前进速度：0.5-1.0 m/s / Forward velocity: 0.5-1.0 m/s
+        self.commands.base_velocity.ranges.lin_vel_y = (-0.0, 0.0)     # 横向速度：0（仅直行）/ Lateral velocity: 0 (straight only)
+        self.commands.base_velocity.ranges.ang_vel_z = (-math.pi / 6, math.pi / 6)  # 转向：±30度 / Turning: ±30 degrees
+
+        self.commands.gait_command= mdp.UniformGaitCommandCfg(
+            resampling_time_range=(5.0, 5.0),  # 命令重采样时间范围 (固定5秒) / Command resampling time range (fixed 5s)
+            debug_vis=False,                    # 不显示调试可视化 / No debug visualization
+            ranges=mdp.UniformGaitCommandCfg.Ranges(
+                # frequencies=(1.5, 2.5),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
+                frequencies=(2.2, 3.2),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
+                offsets=(0.5, 0.5),         # 相位偏移范围 [0-1] / Phase offset range [0-1]
+                durations=(0.5, 0.5),       # 接触持续时间范围 [0-1] / Contact duration range [0-1]
+                swing_height=(0.2, 0.3)     # 摆动高度范围 [m] / Swing height range [m]
+            ),
+        )
+
+        # 调整奖励权重以适应楼梯爬升 / Adjust reward weights for stair climbing
+        
+        self.rewards.rew_lin_vel_xy.weight = 1.5          # 增加线速度跟踪奖励 / Increase linear velocity tracking reward
+        self.rewards.rew_ang_vel_z.weight = 0.75           # 增加角速度跟踪奖励 / Increase angular velocity tracking reward
+       
+        self.rewards.keep_balance.weight = 1.0          #keep balance
+
+        self.rewards.pen_undesired_contacts.weight = -0.5 # 不期望接触惩罚 / Undesired contact penalty
+
+
+        self.rewards.pen_lin_vel_z.weight = -0.5          # 增加Z方向速度惩罚 / Increase Z velocity penalty
+        self.rewards.pen_ang_vel_xy.weight = -0.05        # XY角速度惩罚 / XY angular velocity penalty
+
+
+        self.rewards.pen_action_rate.weight = -0.01       # 动作变化率惩罚 / Action rate penalty
+        self.rewards.pen_action_smoothness.weight = -0.01       # 动作变化率惩罚 / Action rate penalty
+
+        self.rewards.pen_flat_orientation.weight = -1.0   # 姿态保持惩罚 / Orientation keeping penalty
+
+        self.rewards.pen_joint_vel_l2.weight = -5.0e-05
+        self.rewards.pen_joint_accel.weight = -2.5e-07
+        self.rewards.pen_joint_powers.weight = -2.5e-05
+
+        self.rewards.pen_base_height.weight = -1.0
+
+        self.rewards.pen_joint_torque.weight = -2.0e-05
+        self.rewards.pen_joint_pos_limits.weight = -1.0
+
+        self.rewards.test_gait_reward.weight = 1.0
+
+        self.rewards.pen_feet_distance.weight = RewTerm(
+            func=mdp.feet_distance,                     # 足部距离惩罚 / Foot distance penalty
+            weight=-10,
+            params={
+                "min_feet_distance": 0.100,            # 最小足部距离 / Minimum foot distance
+                "feet_links_name": ["foot_[RL]_Link"]  # 足部连杆名称 / Foot link names
+            }
+        )
+
+        self.rewards.foot_landing_vel.weight = 0.0
+        self.rewards.pen_feet_regulation.weight = 0.0
+
+        
+        # 设置楼梯地形 / Set up stairs terrain
+        self.scene.terrain.terrain_type = "generator"
+        self.scene.terrain.terrain_generator = STAIRS_TERRAINS_CFG
+
+@configclass
+class PFBlindStairEnvCfg_PLAYMy(PFBaseEnvCfg_PLAY):
+    """盲视楼梯测试环境配置 / Blind stairs play environment configuration"""
+    
+    def __post_init__(self):
+        """后初始化 - 配置楼梯测试环境 / Post-initialization - configure stairs testing environment"""
+        super().__post_init__()
+        
+        # 移除视觉组件 / Remove vision components
+        self.scene.height_scanner = None
+        self.observations.policy.heights = None
+        self.observations.critic.heights = None
+
+        # 设置测试专用的速度命令 / Set testing-specific velocity commands
+        self.commands.base_velocity.ranges.lin_vel_x = (0.5, 1.0)    # 固定前进速度范围 / Fixed forward velocity range
+        self.commands.base_velocity.ranges.lin_vel_y = (-0.0, 0.0)   # 无横向移动 / No lateral movement
+        self.commands.base_velocity.ranges.ang_vel_z = (-0.0, 0.0)   # 无转向 / No turning
+
+        # 固定重置姿态（无偏航角变化）/ Fixed reset pose (no yaw variation)
+        self.events.reset_robot_base.params["pose_range"]["yaw"] = (-0.0, 0.0)
+
+        # 设置测试楼梯地形 / Set up testing stairs terrain
+        self.scene.terrain.terrain_type = "generator"
+        self.scene.terrain.max_init_terrain_level = None
+        # 设置中等难度的楼梯测试环境 / Set medium difficulty stairs testing environment
+        # self.scene.terrain.terrain_generator = STAIRS_TERRAINS_PLAY_CFG.replace(difficulty_range=(0.5, 0.5))
+        self.scene.terrain.terrain_generator = STAIRS_TERRAINS_PLAY_CFG.replace(difficulty_range=(0.5, 1.0))
+
 
 
 #############################

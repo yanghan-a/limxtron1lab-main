@@ -168,6 +168,21 @@ class ActorCritic(nn.Module):
         mean = self.actor(observations)
         self.distribution = Normal(mean, mean * 0.0 + torch.exp(self.logstd))
 
+    # def update_distribution(self, observations):
+    #     # compute mean
+    #     mean = self.actor(observations)
+    #     # compute standard deviation
+    #     if self.noise_std_type == "scalar":
+    #         current_std_val = nn.functional.softplus(self.std)
+    #         std = current_std_val.expand_as(mean)
+    #     elif self.noise_std_type == "log":
+    #         std = torch.exp(self.log_std).expand_as(mean)
+    #     else:
+    #         raise ValueError(f"Unknown standard deviation type: {self.noise_std_type}. Should be 'scalar' or 'log'")
+    #     # create distribution
+    #     self.distribution = Normal(mean, std)
+    
+
     def act(self, observations, **kwargs):
         """执行动作采样 / Perform action sampling
         

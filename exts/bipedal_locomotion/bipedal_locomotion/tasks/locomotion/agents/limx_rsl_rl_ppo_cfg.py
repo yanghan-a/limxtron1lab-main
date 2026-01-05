@@ -10,7 +10,7 @@ robot_type = os.getenv("ROBOT_TYPE")  # 从环境变量获取机器人类型 / G
 class PFPPORunnerCfg(RslRlOnPolicyRunnerCfg):
     num_steps_per_env = 24        # 每个环境每次收集的步数 / Steps collected per environment per iteration
     max_iterations = 15000        # 最大训练迭代次数 / Maximum training iterations
-    save_interval = 500           # 模型保存间隔 / Model saving interval
+    save_interval = 300           # 模型保存间隔 / Model saving interval
     experiment_name = "pf_flat"   # 实验名称 / Experiment name
     empirical_normalization = False  # 不使用经验归一化 / Don't use empirical normalization
 
@@ -44,7 +44,7 @@ class PFPPORunnerCfg(RslRlOnPolicyRunnerCfg):
 class PF_TRON1AFlatPPORunnerCfg(RslRlOnPolicyRunnerCfg):
     num_steps_per_env = 24
     max_iterations = 3000         # 较短的训练周期，适合平地环境 / Shorter training for flat terrain
-    save_interval = 500           # 更频繁的保存 / More frequent saving
+    save_interval = 300           # 更频繁的保存 / More frequent saving
     experiment_name = "pf_tron_1a_flat"
     empirical_normalization = False
     policy = RslRlPpoActorCriticCfg(
@@ -89,7 +89,7 @@ class PF_TRON1ARoughPPORunnerCfg(PF_TRON1AFlatPPORunnerCfg):
         super().__post_init__()
         self.experiment_name = "pf_tron_1a_rough" # 修改实验名称，防止覆盖
         self.max_iterations = 15000              # 粗糙地面通常需要更长的时间训练
-        self.save_interval = 500               # 增加保存间隔，减少存储需求
+        self.save_interval = 300               # 增加保存间隔，减少存储需求
         # self.algorithm.entropy_coef = 0.01       # 如果收敛慢，可以适当调大这个值
 
 # PF机器人在楼梯地形上的训练配置
@@ -99,7 +99,18 @@ class PF_TRON1AStairPPORunnerCfg(PF_TRON1AFlatPPORunnerCfg):
         super().__post_init__()
         self.experiment_name = "pf_tron_1a_stair" # 修改实验名称，防止覆盖
         self.max_iterations = 8000             # 粗糙地面通常需要更长的时间训练
-        self.save_interval = 500               # 增加保存间隔，减少存储需求
+        self.save_interval = 300               # 增加保存间隔，减少存储需求
+        # self.algorithm.entropy_coef = 0.01       # 如果收敛慢，可以适当调大这个值
+
+
+# PF机器人在楼梯地形上的训练配置
+@configclass
+class PF_TRON1AMyStairPPORunnerCfg(PF_TRON1AFlatPPORunnerCfg):
+    def __post_init__(self):
+        super().__post_init__()
+        self.experiment_name = "pf_tron_1a_stair_my" # 修改实验名称，防止覆盖
+        self.max_iterations = 8000             # 粗糙地面通常需要更长的时间训练
+        self.save_interval = 300               # 增加保存间隔，减少存储需求
         # self.algorithm.entropy_coef = 0.01       # 如果收敛慢，可以适当调大这个值
 
 #-----------------------------------------------------------------
@@ -107,7 +118,7 @@ class PF_TRON1AStairPPORunnerCfg(PF_TRON1AFlatPPORunnerCfg):
 class SF_TRON1AFlatPPORunnerCfg(RslRlOnPolicyRunnerCfg):
     num_steps_per_env = 24
     max_iterations = 15000
-    save_interval = 500
+    save_interval = 300
     experiment_name = "sf_tron_1a_flat"
     empirical_normalization = False
     policy = RslRlPpoActorCriticCfg(
@@ -146,7 +157,7 @@ class SF_TRON1AFlatPPORunnerCfg(RslRlOnPolicyRunnerCfg):
 class WF_TRON1AFlatPPORunnerCfg(RslRlOnPolicyRunnerCfg):
     num_steps_per_env = 24
     max_iterations = 10000
-    save_interval = 500
+    save_interval = 300
     experiment_name = "wf_tron_1a_flat"
     empirical_normalization = False
     policy = RslRlPpoActorCriticCfg(

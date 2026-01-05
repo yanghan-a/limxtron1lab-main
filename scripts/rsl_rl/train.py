@@ -116,7 +116,8 @@ def main():
         env = multi_agent_to_single_agent(env)
 
     # 为rsl-rl包装环境 / Wrap around environment for rsl-rl
-    env = RslRlVecEnvWrapper(env)
+    # env = RslRlVecEnvWrapper(env)
+    env = RslRlVecEnvWrapper(env, clip_actions=5.0)
 
     # 创建来自rsl-rl的运行器 / Create runner from rsl-rl
     # 使用动态评估来创建正确的运行器类 / Use dynamic evaluation to create the correct runner class

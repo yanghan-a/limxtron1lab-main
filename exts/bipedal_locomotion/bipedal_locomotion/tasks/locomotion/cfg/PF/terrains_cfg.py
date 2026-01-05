@@ -33,39 +33,12 @@ BLIND_ROUGH_TERRAINS_CFG = TerrainGeneratorCfg(
     # 子地形配置 - 定义不同类型的地形
     # Sub-terrain configurations - define different types of terrain
     sub_terrains={
-        # # 平地 (25%占比) / Flat terrain (25% proportion)
-        # "flat": MeshPlaneTerrainCfg(proportion=0.25),
-        
-        # # 波浪地形 (25%占比) / Wave terrain (25% proportion)  
-        # "waves": HfWaveTerrainCfg(
-        #     proportion=0.25, 
-        #     amplitude_range=(0.01, 0.06),      # 波浪幅度范围 [m] / Wave amplitude range [m]
-        #     num_waves=10,                      # 波浪数量 / Number of waves
-        #     border_width=0.25                  # 边界宽度 / Border width
-        # ),
-        
-        # # 随机格子地形 (25%占比) / Random grid terrain (25% proportion)
-        # "boxes": MeshRandomGridTerrainCfg(
-        #     proportion=0.25, 
-        #     grid_width=0.15,                   # 格子宽度 / Grid width
-        #     grid_height_range=(0.01, 0.04),    # 格子高度范围 [m] / Grid height range [m]
-        #     platform_width=2.0                 # 平台宽度 / Platform width
-        # ),
-        
-        # # 随机粗糙地形 (25%占比) / Random rough terrain (25% proportion)
-        # "random_rough": HfRandomUniformTerrainCfg(
-        #     proportion=0.25, 
-        #     noise_range=(0.01, 0.06),          # 噪声高度范围 [m] / Noise height range [m]
-        #     noise_step=0.01,                   # 噪声步长 / Noise step
-        #     border_width=0.25                  # 边界宽度 / Border width
-        # ),
-
-        # 平地 (20%占比) / Flat terrain (20% proportion)
-        "flat": MeshPlaneTerrainCfg(proportion=0.10),
+        # 平地 (25%占比) / Flat terrain (25% proportion)
+        "flat": MeshPlaneTerrainCfg(proportion=0.25),
         
         # 波浪地形 (25%占比) / Wave terrain (25% proportion)  
         "waves": HfWaveTerrainCfg(
-            proportion=0.15, 
+            proportion=0.25, 
             amplitude_range=(0.01, 0.06),      # 波浪幅度范围 [m] / Wave amplitude range [m]
             num_waves=10,                      # 波浪数量 / Number of waves
             border_width=0.25                  # 边界宽度 / Border width
@@ -73,7 +46,7 @@ BLIND_ROUGH_TERRAINS_CFG = TerrainGeneratorCfg(
         
         # 随机格子地形 (25%占比) / Random grid terrain (25% proportion)
         "boxes": MeshRandomGridTerrainCfg(
-            proportion=0.20, 
+            proportion=0.25, 
             grid_width=0.15,                   # 格子宽度 / Grid width
             grid_height_range=(0.01, 0.04),    # 格子高度范围 [m] / Grid height range [m]
             platform_width=2.0                 # 平台宽度 / Platform width
@@ -81,39 +54,66 @@ BLIND_ROUGH_TERRAINS_CFG = TerrainGeneratorCfg(
         
         # 随机粗糙地形 (25%占比) / Random rough terrain (25% proportion)
         "random_rough": HfRandomUniformTerrainCfg(
-            proportion=0.20, 
+            proportion=0.25, 
             noise_range=(0.01, 0.06),          # 噪声高度范围 [m] / Noise height range [m]
             noise_step=0.01,                   # 噪声步长 / Noise step
             border_width=0.25                  # 边界宽度 / Border width
         ),
 
-        # 金字塔楼梯 (40%占比) / Pyramid stairs (40% proportion)
-        "pyramid_stairs": MeshPyramidStairsTerrainCfg(
-            proportion=0.15,
-            step_height_range=(0.05, 0.20),    # 台阶高度范围 5-20cm / Step height range 5-20cm
-            step_width=0.3,                    # 台阶宽度 30cm / Step width 30cm
-            platform_width=3.0,                # 平台宽度 3m / Platform width 3m
-            border_width=1.0,                  # 边界宽度 / Border width
-            holes=False,                       # 不添加洞 / No holes
-        ),
+        # # 平地 (20%占比) / Flat terrain (20% proportion)
+        # "flat": MeshPlaneTerrainCfg(proportion=0.10),
+        
+        # # 波浪地形 (25%占比) / Wave terrain (25% proportion)  
+        # "waves": HfWaveTerrainCfg(
+        #     proportion=0.15, 
+        #     amplitude_range=(0.01, 0.06),      # 波浪幅度范围 [m] / Wave amplitude range [m]
+        #     num_waves=10,                      # 波浪数量 / Number of waves
+        #     border_width=0.25                  # 边界宽度 / Border width
+        # ),
+        
+        # # 随机格子地形 (25%占比) / Random grid terrain (25% proportion)
+        # "boxes": MeshRandomGridTerrainCfg(
+        #     proportion=0.20, 
+        #     grid_width=0.15,                   # 格子宽度 / Grid width
+        #     grid_height_range=(0.01, 0.04),    # 格子高度范围 [m] / Grid height range [m]
+        #     platform_width=2.0                 # 平台宽度 / Platform width
+        # ),
+        
+        # # 随机粗糙地形 (25%占比) / Random rough terrain (25% proportion)
+        # "random_rough": HfRandomUniformTerrainCfg(
+        #     proportion=0.20, 
+        #     noise_range=(0.01, 0.06),          # 噪声高度范围 [m] / Noise height range [m]
+        #     noise_step=0.01,                   # 噪声步长 / Noise step
+        #     border_width=0.25                  # 边界宽度 / Border width
+        # ),
 
-        # 倒金字塔楼梯 (40%占比) / Inverted pyramid stairs (40% proportion)
-        "pyramid_stairs_inv": MeshInvertedPyramidStairsTerrainCfg(
-            proportion=0.10,
-            step_height_range=(0.05, 0.20),    # 下降台阶 / Descending steps
-            step_width=0.3,
-            platform_width=3.0,
-            border_width=1.0,
-            holes=False,
-        ),
+        # # 金字塔楼梯 (40%占比) / Pyramid stairs (40% proportion)
+        # "pyramid_stairs": MeshPyramidStairsTerrainCfg(
+        #     proportion=0.15,
+        #     step_height_range=(0.05, 0.20),    # 台阶高度范围 5-20cm / Step height range 5-20cm
+        #     step_width=0.3,                    # 台阶宽度 30cm / Step width 30cm
+        #     platform_width=3.0,                # 平台宽度 3m / Platform width 3m
+        #     border_width=1.0,                  # 边界宽度 / Border width
+        #     holes=False,                       # 不添加洞 / No holes
+        # ),
 
-        # 金字塔斜坡 (10%占比) / Pyramid slope (10% proportion)
-        "hf_pyramid_slope": HfPyramidSlopedTerrainCfg(
-            proportion=0.10, 
-            slope_range=(0.0, 0.4),            # 斜率范围 0-40% / Slope range 0-40%
-            platform_width=2.0, 
-            border_width=0.25
-        ),
+        # # 倒金字塔楼梯 (40%占比) / Inverted pyramid stairs (40% proportion)
+        # "pyramid_stairs_inv": MeshInvertedPyramidStairsTerrainCfg(
+        #     proportion=0.10,
+        #     step_height_range=(0.05, 0.20),    # 下降台阶 / Descending steps
+        #     step_width=0.3,
+        #     platform_width=3.0,
+        #     border_width=1.0,
+        #     holes=False,
+        # ),
+
+        # # 金字塔斜坡 (10%占比) / Pyramid slope (10% proportion)
+        # "hf_pyramid_slope": HfPyramidSlopedTerrainCfg(
+        #     proportion=0.10, 
+        #     slope_range=(0.0, 0.4),            # 斜率范围 0-40% / Slope range 0-40%
+        #     platform_width=2.0, 
+        #     border_width=0.25
+        # ),
     },
     
     curriculum=True,                    # 启用课程学习 / Enable curriculum learning
@@ -135,72 +135,72 @@ BLIND_ROUGH_TERRAINS_PLAY_CFG = TerrainGeneratorCfg(
     
     sub_terrains={
         # 只保留三种地形类型 / Only keep three terrain types
-        # "waves": HfWaveTerrainCfg(
-        #     proportion=0.33,                # 33%占比 / 33% proportion
-        #     amplitude_range=(0.01, 0.06), 
-        #     num_waves=10, 
-        #     border_width=0.25
-        # ),
-        # "boxes": MeshRandomGridTerrainCfg(
-        #     proportion=0.2,                 # 20%占比 / 20% proportion
-        #     grid_width=0.33,                # 更大的格子 / Larger grid
-        #     grid_height_range=(0.01, 0.04), 
-        #     platform_width=2.0
-        # ),
-        # "random_rough": HfRandomUniformTerrainCfg(
-        #     proportion=0.34,                # 34%占比 / 34% proportion
-        #     noise_range=(0.01, 0.06), 
-        #     noise_step=0.01, 
-        #     border_width=0.25
-        # ),
-
-        # 只保留三种地形类型 / Only keep three terrain types
         "waves": HfWaveTerrainCfg(
-            proportion=0.20,                # 33%占比 / 33% proportion
+            proportion=0.33,                # 33%占比 / 33% proportion
             amplitude_range=(0.01, 0.06), 
             num_waves=10, 
             border_width=0.25
         ),
         "boxes": MeshRandomGridTerrainCfg(
-            proportion=0.20,                 # 20%占比 / 20% proportion
+            proportion=0.2,                 # 20%占比 / 20% proportion
             grid_width=0.33,                # 更大的格子 / Larger grid
             grid_height_range=(0.01, 0.04), 
             platform_width=2.0
         ),
         "random_rough": HfRandomUniformTerrainCfg(
-            proportion=0.20,                # 34%占比 / 34% proportion
+            proportion=0.34,                # 34%占比 / 34% proportion
             noise_range=(0.01, 0.06), 
             noise_step=0.01, 
             border_width=0.25
         ),
 
-        # 金字塔楼梯 (40%占比) / Pyramid stairs (40% proportion)
-        "pyramid_stairs": MeshPyramidStairsTerrainCfg(
-            proportion=0.20,
-            step_height_range=(0.05, 0.20),    # 台阶高度范围 5-20cm / Step height range 5-20cm
-            step_width=0.3,                    # 台阶宽度 30cm / Step width 30cm
-            platform_width=3.0,                # 平台宽度 3m / Platform width 3m
-            border_width=1.0,                  # 边界宽度 / Border width
-            holes=False,                       # 不添加洞 / No holes
-        ),
+        # 只保留三种地形类型 / Only keep three terrain types
+        # "waves": HfWaveTerrainCfg(
+        #     proportion=0.20,                # 33%占比 / 33% proportion
+        #     amplitude_range=(0.01, 0.06), 
+        #     num_waves=10, 
+        #     border_width=0.25
+        # ),
+        # "boxes": MeshRandomGridTerrainCfg(
+        #     proportion=0.20,                 # 20%占比 / 20% proportion
+        #     grid_width=0.33,                # 更大的格子 / Larger grid
+        #     grid_height_range=(0.01, 0.04), 
+        #     platform_width=2.0
+        # ),
+        # "random_rough": HfRandomUniformTerrainCfg(
+        #     proportion=0.20,                # 34%占比 / 34% proportion
+        #     noise_range=(0.01, 0.06), 
+        #     noise_step=0.01, 
+        #     border_width=0.25
+        # ),
 
-        # 倒金字塔楼梯 (40%占比) / Inverted pyramid stairs (40% proportion)
-        "pyramid_stairs_inv": MeshInvertedPyramidStairsTerrainCfg(
-            proportion=0.10,
-            step_height_range=(0.05, 0.20),    # 下降台阶 / Descending steps
-            step_width=0.3,
-            platform_width=3.0,
-            border_width=1.0,
-            holes=False,
-        ),
+        # # 金字塔楼梯 (40%占比) / Pyramid stairs (40% proportion)
+        # "pyramid_stairs": MeshPyramidStairsTerrainCfg(
+        #     proportion=0.20,
+        #     step_height_range=(0.05, 0.20),    # 台阶高度范围 5-20cm / Step height range 5-20cm
+        #     step_width=0.3,                    # 台阶宽度 30cm / Step width 30cm
+        #     platform_width=3.0,                # 平台宽度 3m / Platform width 3m
+        #     border_width=1.0,                  # 边界宽度 / Border width
+        #     holes=False,                       # 不添加洞 / No holes
+        # ),
 
-        # 金字塔斜坡 (10%占比) / Pyramid slope (10% proportion)
-        "hf_pyramid_slope": HfPyramidSlopedTerrainCfg(
-            proportion=0.10, 
-            slope_range=(0.0, 0.4),            # 斜率范围 0-40% / Slope range 0-40%
-            platform_width=2.0, 
-            border_width=0.25
-        ),
+        # # 倒金字塔楼梯 (40%占比) / Inverted pyramid stairs (40% proportion)
+        # "pyramid_stairs_inv": MeshInvertedPyramidStairsTerrainCfg(
+        #     proportion=0.10,
+        #     step_height_range=(0.05, 0.20),    # 下降台阶 / Descending steps
+        #     step_width=0.3,
+        #     platform_width=3.0,
+        #     border_width=1.0,
+        #     holes=False,
+        # ),
+
+        # # 金字塔斜坡 (10%占比) / Pyramid slope (10% proportion)
+        # "hf_pyramid_slope": HfPyramidSlopedTerrainCfg(
+        #     proportion=0.10, 
+        #     slope_range=(0.0, 0.4),            # 斜率范围 0-40% / Slope range 0-40%
+        #     platform_width=2.0, 
+        #     border_width=0.25
+        # ),
 
     },
     

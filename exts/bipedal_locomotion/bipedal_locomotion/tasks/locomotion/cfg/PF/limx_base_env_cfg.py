@@ -95,7 +95,8 @@ class CommandCfg(BaseCommandsCfg):
         resampling_time_range=(5.0, 5.0),  # 命令重采样时间范围 (固定5秒) / Command resampling time range (fixed 5s)
         debug_vis=False,                    # 不显示调试可视化 / No debug visualization
         ranges=mdp.UniformGaitCommandCfg.Ranges(
-            frequencies=(1.5, 2.5),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
+            # frequencies=(1.5, 2.5),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
+            frequencies=(2.2, 3.2),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
             offsets=(0.5, 0.5),         # 相位偏移范围 [0-1] / Phase offset range [0-1]
             durations=(0.5, 0.5),       # 接触持续时间范围 [0-1] / Contact duration range [0-1]
             swing_height=(0.1, 0.2)     # 摆动高度范围 [m] / Swing height range [m]
@@ -113,9 +114,12 @@ class CommandCfg(BaseCommandsCfg):
         self.base_velocity.rel_heading_envs = 0.0        # 航向环境比例 / Heading environments ratio
         # 速度命令范围设置 / Velocity command ranges
         self.base_velocity.ranges = mdp.UniformVelocityCommandCfg.Ranges(
-            lin_vel_x=(-1.5, 1.5),      # 前进速度范围 [m/s] / Forward velocity range [m/s]
-            lin_vel_y=(-1.0, 1.0),      # 横向速度范围 [m/s] / Lateral velocity range [m/s]
-            ang_vel_z=(-0.5, 0.5),      # 转向角速度范围 [rad/s] / Turning angular velocity range [rad/s]
+            # lin_vel_x=(-1.5, 1.5),      # 前进速度范围 [m/s] / Forward velocity range [m/s]
+            # lin_vel_y=(-1.0, 1.0),      # 横向速度范围 [m/s] / Lateral velocity range [m/s]
+            # ang_vel_z=(-0.5, 0.5),      # 转向角速度范围 [rad/s] / Turning angular velocity range [rad/s]
+            lin_vel_x=(-1.8, 1.8),      # 前进速度范围 [m/s] / Forward velocity range [m/s]
+            lin_vel_y=(-1.2, 1.2),      # 横向速度范围 [m/s] / Lateral velocity range [m/s]
+            ang_vel_z=(-0.6, 0.6),      # 转向角速度范围 [rad/s] / Turning angular velocity range [rad/s]
             heading=(-math.pi, math.pi)  # 航向角范围 [rad] / Heading angle range [rad]
         )
 
@@ -405,10 +409,10 @@ class RewardsCfg:
 
     # tracking related rewards
     rew_lin_vel_xy = RewTerm(
-        func=mdp.track_lin_vel_xy_exp, weight=3.0, params={"command_name": "base_velocity", "std": math.sqrt(0.2)}
+        func=mdp.track_lin_vel_xy_exp, weight=3.4, params={"command_name": "base_velocity", "std": math.sqrt(0.2)}
     )
     rew_ang_vel_z = RewTerm(
-        func=mdp.track_ang_vel_z_exp, weight=1.5, params={"command_name": "base_velocity", "std": math.sqrt(0.2)}
+        func=mdp.track_ang_vel_z_exp, weight=1.8, params={"command_name": "base_velocity", "std": math.sqrt(0.2)}
     )
 
     # 调节相关奖励 / Regulation-related rewards
@@ -480,7 +484,7 @@ class RewardsCfg:
     # 步态奖励 / Gait reward
     test_gait_reward = RewTerm(
         func=mdp.GaitReward,                        # 步态奖励函数 / Gait reward function
-        weight=1.0,
+        weight=1.2,
         params={
             "tracking_contacts_shaped_force": -2.0,    # 接触力跟踪形状参数 / Contact force tracking shaping
             "tracking_contacts_shaped_vel": -2.0,      # 接触速度跟踪形状参数 / Contact velocity tracking shaping
