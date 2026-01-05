@@ -300,14 +300,7 @@ class PFBlindStairEnvCfgMy(PFBaseEnvCfg):
 
         self.rewards.test_gait_reward.weight = 1.0
 
-        self.rewards.pen_feet_distance = RewTerm(
-            func=mdp.feet_distance,                     # 足部距离惩罚 / Foot distance penalty
-            weight=-10,
-            params={
-                "min_feet_distance": 0.100,            # 最小足部距离 / Minimum foot distance
-                "feet_links_name": ["foot_[RL]_Link"]  # 足部连杆名称 / Foot link names
-            }
-        )
+        self.rewards.pen_feet_distance.weight = -10.0
 
         self.rewards.foot_landing_vel.weight = 0.0
         self.rewards.pen_feet_regulation.weight = 0.0
