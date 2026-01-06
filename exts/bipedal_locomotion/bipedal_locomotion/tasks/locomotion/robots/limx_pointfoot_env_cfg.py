@@ -97,6 +97,19 @@ class PFBlindFlatEnvCfg(PFBaseEnvCfg):
 class PFBlindFlatEnvCfg_PLAY(PFBaseEnvCfg_PLAY):
     def __post_init__(self):
         super().__post_init__()
+
+
+        # self.commands.gait_command= mdp.UniformGaitCommandCfg(
+        #     resampling_time_range=(5.0, 5.0),  # 命令重采样时间范围 (固定5秒) / Command resampling time range (fixed 5s)
+        #     debug_vis=False,                    # 不显示调试可视化 / No debug visualization
+        #     ranges=mdp.UniformGaitCommandCfg.Ranges(
+        #         # frequencies=(1.5, 2.5),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
+        #         frequencies=(2.5, 3),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
+        #         offsets=(0.5, 0.5),         # 相位偏移范围 [0-1] / Phase offset range [0-1]
+        #         durations=(0.5, 0.5),       # 接触持续时间范围 [0-1] / Contact duration range [0-1]
+        #         swing_height=(0.1, 0.2)     # 摆动高度范围 [m] / Swing height range [m]
+        #     ),
+        # )
         
         self.scene.height_scanner = None
         self.observations.policy.heights = None
@@ -128,13 +141,17 @@ class PFBlindRoughEnvCfg(PFBaseEnvCfg):
             resampling_time_range=(5.0, 5.0),  # 命令重采样时间范围 (固定5秒) / Command resampling time range (fixed 5s)
             debug_vis=False,                    # 不显示调试可视化 / No debug visualization
             ranges=mdp.UniformGaitCommandCfg.Ranges(
-                # frequencies=(1.5, 2.5),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
-                frequencies=(5, 5),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
+                frequencies=(1.5, 2.5),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
+                # frequencies=(5, 5),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
                 offsets=(0.5, 0.5),         # 相位偏移范围 [0-1] / Phase offset range [0-1]
                 durations=(0.5, 0.5),       # 接触持续时间范围 [0-1] / Contact duration range [0-1]
-                swing_height=(0.2, 0.3)     # 摆动高度范围 [m] / Swing height range [m]
+                swing_height=(0.1, 0.2)     # 摆动高度范围 [m] / Swing height range [m]
             ),
         )
+
+        self.commands.base_velocity.ranges.lin_vel_x = (-3, 3)      # 前进速度：0.5-1.0 m/s / Forward velocity: 0.5-1.0 m/s
+        self.commands.base_velocity.ranges.lin_vel_y = (-2.5, 2.5)     # 横向速度：0（仅直行）/ Lateral velocity: 0 (straight only)
+        self.commands.base_velocity.ranges.ang_vel_z = (-math.pi / 4, math.pi / 4)  # 转向：±30度 / Turning: ±30 degrees
 
         self.scene.height_scanner = None
         self.observations.policy.heights = None
@@ -155,10 +172,10 @@ class PFBlindRoughEnvCfg_PLAY(PFBaseEnvCfg_PLAY):
             debug_vis=False,                    # 不显示调试可视化 / No debug visualization
             ranges=mdp.UniformGaitCommandCfg.Ranges(
                 # frequencies=(1.5, 2.5),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
-                frequencies=(5, 5),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
+                frequencies=(1.5, 2.5),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
                 offsets=(0.5, 0.5),         # 相位偏移范围 [0-1] / Phase offset range [0-1]
                 durations=(0.5, 0.5),       # 接触持续时间范围 [0-1] / Contact duration range [0-1]
-                swing_height=(0.2, 0.3)     # 摆动高度范围 [m] / Swing height range [m]
+                swing_height=(0.1, 0.2)     # 摆动高度范围 [m] / Swing height range [m]
             ),
         )
         
@@ -299,7 +316,7 @@ class PFBlindStairEnvCfgMy(PFBaseEnvCfg):
         self.rewards.rew_lin_vel_xy.weight = 1.5          # 增加线速度跟踪奖励 / Increase linear velocity tracking reward
         self.rewards.rew_ang_vel_z.weight = 0.75           # 增加角速度跟踪奖励 / Increase angular velocity tracking reward
        
-        self.rewards.keep_balance.weight = 1.0          #keep balance
+        self.rewards.keep_balance.weight = 0.0          #keep balance
 
         self.rewards.pen_undesired_contacts.weight = -0.5 # 不期望接触惩罚 / Undesired contact penalty
 
@@ -324,7 +341,7 @@ class PFBlindStairEnvCfgMy(PFBaseEnvCfg):
 
         self.rewards.test_gait_reward.weight = 1.0
 
-        self.rewards.pen_feet_distance.weight = -4.0
+        self.rewards.pen_feet_distance.weight = -6.0
 
         self.rewards.foot_landing_vel.weight = 0.0
         self.rewards.pen_feet_regulation.weight = 0.0
@@ -359,8 +376,8 @@ class PFBlindStairEnvCfg_PLAYMy(PFBaseEnvCfg_PLAY):
         self.scene.terrain.terrain_type = "generator"
         self.scene.terrain.max_init_terrain_level = None
         # 设置中等难度的楼梯测试环境 / Set medium difficulty stairs testing environment
-        # self.scene.terrain.terrain_generator = STAIRS_TERRAINS_PLAY_CFG.replace(difficulty_range=(0.5, 0.5))
-        self.scene.terrain.terrain_generator = STAIRS_TERRAINS_PLAY_CFG.replace(difficulty_range=(0.5, 1.0))
+        self.scene.terrain.terrain_generator = STAIRS_TERRAINS_PLAY_CFG.replace(difficulty_range=(0.5, 0.5))
+        # self.scene.terrain.terrain_generator = STAIRS_TERRAINS_PLAY_CFG.replace(difficulty_range=(0.5, 1.0))
 
         self.commands.base_velocity.resampling_time_range = (1000000.0, 1000000.0)  # 速度命令重采样时间 / Velocity command resampling time
         # 时间超时终止 / Time out termination

@@ -75,8 +75,8 @@ class ManualController:
         self.device = device
         self.linear_velocity = torch.zeros(3, device=device)
         self.angular_velocity = torch.zeros(3, device=device)
-        self.max_linear_vel = 1.4
-        self.max_angular_vel = 1.0
+        self.max_linear_vel = 0.8
+        self.max_angular_vel = 0.8
         
     def get_velocity_command(self):
         """Return SE2 command [vx, vy, wz] in robot base frame."""
@@ -309,7 +309,7 @@ def main():
                 random_direction = torch.randn(3, device=env.unwrapped.device)
                 random_direction = random_direction / torch.norm(random_direction)  # normalize to unit vector
                 # Scale to 200N
-                force_magnitude = 200.0
+                force_magnitude = 50.0
                 push_force_vector = random_direction * force_magnitude
                 print(f"[INFO] Started applying 200N force: direction={push_force_vector.cpu().numpy()}")
             
@@ -333,6 +333,13 @@ def main():
                 print(f"[INFO] Push ended. Duration: {push_duration:.3f}s, Total Impulse: {total_impulse:.2f} N·s")
                 is_pushing = False
                 push_force_vector = None
+
+                # Explicitly clear external forces
+                robot = env.unwrapped.scene["robot"]
+                forces = torch.zeros(env.num_envs, robot.num_bodies, 3, device=env.unwrapped.device)
+                torques = torch.zeros_like(forces)
+                robot.set_external_force_and_torque(forces, torques)
+                print("[INFO] External forces cleared")
 
         # run everything in inference mode
         with torch.inference_mode():
