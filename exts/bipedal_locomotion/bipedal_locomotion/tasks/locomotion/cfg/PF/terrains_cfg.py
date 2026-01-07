@@ -326,3 +326,49 @@ STAIRS_TERRAINS_PLAY_CFG = TerrainGeneratorCfg(
     curriculum=True,
     difficulty_range=(1.0, 1.0),
 )
+
+
+##############################
+# 混合路线地形配置 / Mixed Course Terrain
+##############################
+
+# 说明：该配置将多种地形在横向拼接，便于从起点A到终点B的连续穿越评测。
+# 注意：TerrainGenerator 会基于比例随机放置子地形；通过设定 num_rows=1、固定随机种子和较小列数，
+# 可以得到稳定的“走廊式”混合地形，包含：平地 → 斜坡 → 离散格子 → 楼梯（上下）等。
+MIXED_COURSE_TERRAINS_CFG = TerrainGeneratorCfg(
+    seed=123,
+    size=(10.0, 10.0),            # 更大单元，保证过渡更明显
+    border_width=20.0,
+    num_rows=1,                   # 单行走廊
+    num_cols=6,                   # 6段连续地形
+    horizontal_scale=0.1,
+    vertical_scale=0.005,
+    slope_threshold=0.75,
+    use_cache=True,
+    sub_terrains={
+        # 依次包含：平地、上坡、波浪、格子、下坡、楼梯
+        "flat": MeshPlaneTerrainCfg(proportion=0.17),
+        "hf_pyramid_slope": HfPyramidSlopedTerrainCfg(
+            proportion=0.17, slope_range=(0.0, 0.4), platform_width=1.0, border_width=0.25
+        ),
+        "waves": HfWaveTerrainCfg(
+            proportion=0.16, amplitude_range=(0.01, 0.06), num_waves=8, border_width=0.25
+        ),
+        "boxes": MeshRandomGridTerrainCfg(
+            proportion=0.17, grid_width=0.20, grid_height_range=(0.01, 0.04), platform_width=2.0
+        ),
+        "hf_pyramid_slope_inv": HfInvertedPyramidSlopedTerrainCfg(
+            proportion=0.16, slope_range=(0.0, 0.4), platform_width=1.0, border_width=0.25
+        ),
+        "pyramid_stairs": MeshPyramidStairsTerrainCfg(
+            proportion=0.17, step_height_range=(0.02, 0.18), step_width=0.30, platform_width=1.0, border_width=0.8, holes=False
+        ),
+    },
+    curriculum=True,               # 训练时启用课程学习
+    difficulty_range=(0.0, 1.0),
+)
+
+MIXED_COURSE_TERRAINS_PLAY_CFG = MIXED_COURSE_TERRAINS_CFG.copy()
+MIXED_COURSE_TERRAINS_PLAY_CFG.curriculum = False
+MIXED_COURSE_TERRAINS_PLAY_CFG.difficulty_range = (0.5, 0.5)
+

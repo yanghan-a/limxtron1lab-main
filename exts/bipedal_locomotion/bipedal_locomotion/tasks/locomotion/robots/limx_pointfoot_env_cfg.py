@@ -11,6 +11,7 @@ from bipedal_locomotion.tasks.locomotion.cfg.PF.terrains_cfg import (
     STAIRS_TERRAINS_PLAY_CFG,
     BLIND_HARD_ROUGH_TERRAINS_CFG,
     BLIND_HARD_ROUGH_TERRAINS_PLAY_CFG,
+    MIXED_COURSE_TERRAINS_PLAY_CFG,
 )
 
 from isaaclab.sensors import RayCasterCfg, patterns
@@ -403,6 +404,47 @@ class PFBlindStairEnvCfg_PLAYMy(PFBaseEnvCfg_PLAY):
         # )
 
 
+#混合地形测试
+@configclass
+class PFBlindMixEnvCfg_PLAY(PFBaseEnvCfg_PLAY):
+    """盲视楼梯测试环境配置 / Blind stairs play environment configuration"""
+    
+    def __post_init__(self):
+        """后初始化 - 配置楼梯测试环境 / Post-initialization - configure stairs testing environment"""
+        super().__post_init__()
+        
+        self.commands.gait_command= mdp.UniformGaitCommandCfg(
+            resampling_time_range=(5.0, 5.0),  # 命令重采样时间范围 (固定5秒) / Command resampling time range (fixed 5s)
+            debug_vis=False,                    # 不显示调试可视化 / No debug visualization
+            ranges=mdp.UniformGaitCommandCfg.Ranges(
+                # frequencies=(1.5, 2.5),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
+                frequencies=(1.5, 2.5),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
+                offsets=(0.5, 0.5),         # 相位偏移范围 [0-1] / Phase offset range [0-1]
+                durations=(0.5, 0.5),       # 接触持续时间范围 [0-1] / Contact duration range [0-1]
+                swing_height=(0.1, 0.2)     # 摆动高度范围 [m] / Swing height range [m]
+            ),
+        )
+        
+        self.scene.height_scanner = None
+        self.observations.policy.heights = None
+        self.observations.critic.heights = None
+
+        # spawn the robot randomly in the grid (instead of their terrain levels)
+        self.scene.terrain.terrain_type = "generator"
+        self.scene.terrain.max_init_terrain_level = None
+        self.scene.terrain.terrain_generator = MIXED_COURSE_TERRAINS_PLAY_CFG
+        # self.scene.terrain.terrain_generator = BLIND_HARD_ROUGH_TERRAINS_PLAY_CFG
+
+        self.commands.base_velocity.resampling_time_range = (1000000.0, 1000000.0)  # 速度命令重采样时间 / Velocity command resampling time
+        # 时间超时终止 / Time out termination
+        self.terminations.time_out = None
+
+        self.commands.base_velocity.ranges = mdp.UniformVelocityCommandCfg.Ranges(
+            lin_vel_x=(0.0, 0.0), 
+            lin_vel_y=(0.0, 0.0), 
+            ang_vel_z=(0.0, 0.0), 
+            heading=(0.0, 0.0)
+        )
 
 #############################
 # 带高度扫描的双足机器人楼梯环境 / Pointfoot Stairs Environment with Height Scanning

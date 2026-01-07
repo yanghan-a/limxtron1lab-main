@@ -113,6 +113,16 @@ class PF_TRON1AMyStairPPORunnerCfg(PF_TRON1AFlatPPORunnerCfg):
         self.save_interval = 300               # 增加保存间隔，减少存储需求
         # self.algorithm.entropy_coef = 0.01       # 如果收敛慢，可以适当调大这个值
 
+# PF机器人在楼梯地形上的训练配置
+@configclass
+class PF_TRON1AMixPPORunnerCfg(PF_TRON1AFlatPPORunnerCfg):
+    def __post_init__(self):
+        super().__post_init__()
+        self.experiment_name = "pf_tron_1a_mix" # 修改实验名称，防止覆盖
+        self.max_iterations = 15000             # 粗糙地面通常需要更长的时间训练
+        self.save_interval = 300               # 增加保存间隔，减少存储需求
+        # self.algorithm.entropy_coef = 0.01       # 如果收敛慢，可以适当调大这个值
+
 #-----------------------------------------------------------------
 @configclass
 class SF_TRON1AFlatPPORunnerCfg(RslRlOnPolicyRunnerCfg):
