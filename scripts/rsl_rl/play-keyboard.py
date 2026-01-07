@@ -75,8 +75,8 @@ class ManualController:
         self.device = device
         self.linear_velocity = torch.zeros(3, device=device)
         self.angular_velocity = torch.zeros(3, device=device)
-        self.max_linear_vel = 0.8
-        self.max_angular_vel = 0.8
+        self.max_linear_vel = 1.0
+        self.max_angular_vel = 1.0
         
     def get_velocity_command(self):
         """Return SE2 command [vx, vy, wz] in robot base frame."""

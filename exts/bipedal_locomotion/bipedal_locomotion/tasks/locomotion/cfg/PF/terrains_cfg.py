@@ -251,7 +251,7 @@ STAIRS_TERRAINS_CFG = TerrainGeneratorCfg(
         # 金字塔楼梯 (40%占比) / Pyramid stairs (40% proportion)
         "pyramid_stairs": MeshPyramidStairsTerrainCfg(
             proportion=0.4,
-            step_height_range=(0.05, 0.20),    # 台阶高度范围 5-20cm / Step height range 5-20cm
+            step_height_range=(0.02, 0.15),    # 台阶高度范围 5-20cm / Step height range 5-20cm
             step_width=0.3,                    # 台阶宽度 30cm / Step width 30cm
             platform_width=3.0,                # 平台宽度 3m / Platform width 3m
             border_width=1.0,                  # 边界宽度 / Border width
@@ -261,7 +261,7 @@ STAIRS_TERRAINS_CFG = TerrainGeneratorCfg(
         # 倒金字塔楼梯 (40%占比) / Inverted pyramid stairs (40% proportion)
         "pyramid_stairs_inv": MeshInvertedPyramidStairsTerrainCfg(
             proportion=0.4,
-            step_height_range=(0.05, 0.20),    # 下降台阶 / Descending steps
+            step_height_range=(0.02, 0.15),    # 下降台阶 / Descending steps
             step_width=0.3,
             platform_width=3.0,
             border_width=1.0,

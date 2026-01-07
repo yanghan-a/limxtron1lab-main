@@ -390,6 +390,18 @@ class PFBlindStairEnvCfg_PLAYMy(PFBaseEnvCfg_PLAY):
             heading=(0.0, 0.0)
         )
 
+        # self.commands.gait_command= mdp.UniformGaitCommandCfg(
+        #     resampling_time_range=(5.0, 5.0),  # 命令重采样时间范围 (固定5秒) / Command resampling time range (fixed 5s)
+        #     debug_vis=False,                    # 不显示调试可视化 / No debug visualization
+        #     ranges=mdp.UniformGaitCommandCfg.Ranges(
+        #         # frequencies=(1.5, 2.5),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
+        #         frequencies=(2.0, 2.5),     # 步态频率范围 [Hz] / Gait frequency range [Hz]
+        #         offsets=(0.5, 0.5),         # 相位偏移范围 [0-1] / Phase offset range [0-1]
+        #         durations=(0.5, 0.5),       # 接触持续时间范围 [0-1] / Contact duration range [0-1]
+        #         swing_height=(0.15, 0.2)     # 摆动高度范围 [m] / Swing height range [m]
+        #     ),
+        # )
+
 
 
 #############################
