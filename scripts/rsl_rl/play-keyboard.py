@@ -75,7 +75,7 @@ class ManualController:
         self.device = device
         self.linear_velocity = torch.zeros(3, device=device)
         self.angular_velocity = torch.zeros(3, device=device)
-        self.max_linear_vel = 1.0
+        self.max_linear_vel = 1.5
         self.max_angular_vel = 1.0
         
     def get_velocity_command(self):
@@ -310,7 +310,7 @@ def main():
                 random_direction = random_direction / torch.norm(random_direction)  # normalize to unit vector
                 # Scale to 200N
                 force_magnitude = 50.0
-                push_force_vector = random_direction * force_magnitude
+                push_force_vector = random_direcition * force_magnitude
                 print(f"[INFO] Started applying 200N force: direction={push_force_vector.cpu().numpy()}")
             
             # Continue applying force (only if push_force_vector is initialized)

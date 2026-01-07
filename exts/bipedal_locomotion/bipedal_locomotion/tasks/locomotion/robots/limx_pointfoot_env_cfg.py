@@ -314,38 +314,38 @@ class PFBlindStairEnvCfgMy(PFBaseEnvCfg):
 
         # 调整奖励权重以适应楼梯爬升 / Adjust reward weights for stair climbing
         
-        self.rewards.rew_lin_vel_xy.weight = 1.5          # 增加线速度跟踪奖励 / Increase linear velocity tracking reward
-        self.rewards.rew_ang_vel_z.weight = 0.75           # 增加角速度跟踪奖励 / Increase angular velocity tracking reward
+        # self.rewards.rew_lin_vel_xy.weight = 3.0         # 增加线速度跟踪奖励 / Increase linear velocity tracking reward
+        # self.rewards.rew_ang_vel_z.weight = 1.5           # 增加角速度跟踪奖励 / Increase angular velocity tracking reward
        
-        self.rewards.keep_balance.weight = 0.0          #keep balance
+        # self.rewards.keep_balance.weight = 0.5          #keep balance
 
-        self.rewards.pen_undesired_contacts.weight = -0.5 # 不期望接触惩罚 / Undesired contact penalty
-
-
-        self.rewards.pen_lin_vel_z.weight = -0.5          # 增加Z方向速度惩罚 / Increase Z velocity penalty
-        self.rewards.pen_ang_vel_xy.weight = -0.05        # XY角速度惩罚 / XY angular velocity penalty
+        # self.rewards.pen_undesired_contacts.weight = -0.5 # 不期望接触惩罚 / Undesired contact penalty
 
 
-        self.rewards.pen_action_rate.weight = -0.01       # 动作变化率惩罚 / Action rate penalty
-        self.rewards.pen_action_smoothness.weight = -0.01       # 动作变化率惩罚 / Action rate penalty
+        # self.rewards.pen_lin_vel_z.weight = -0.5          # 增加Z方向速度惩罚 / Increase Z velocity penalty
+        # self.rewards.pen_ang_vel_xy.weight = -0.05        # XY角速度惩罚 / XY angular velocity penalty
 
-        self.rewards.pen_flat_orientation.weight = -1.0   # 姿态保持惩罚 / Orientation keeping penalty
 
-        self.rewards.pen_joint_vel_l2.weight = -5.0e-05
-        self.rewards.pen_joint_accel.weight = -2.5e-07
-        self.rewards.pen_joint_powers.weight = -2.0e-05
+        # self.rewards.pen_action_rate.weight = -0.01       # 动作变化率惩罚 / Action rate penalty
+        # self.rewards.pen_action_smoothness.weight = -0.01       # 动作变化率惩罚 / Action rate penalty
 
-        self.rewards.pen_base_height.weight = -1.0
+        # self.rewards.pen_flat_orientation.weight = -1.0   # 姿态保持惩罚 / Orientation keeping penalty
 
-        self.rewards.pen_joint_torque.weight = -2.0e-05
-        self.rewards.pen_joint_pos_limits.weight = -1.0
+        # self.rewards.pen_joint_vel_l2.weight = -5.0e-05
+        # self.rewards.pen_joint_accel.weight = -2.5e-07
+        # self.rewards.pen_joint_powers.weight = -2.0e-05
 
-        self.rewards.test_gait_reward.weight = 1.0
+        # self.rewards.pen_base_height.weight = -1.0
 
-        self.rewards.pen_feet_distance.weight = -6.0
+        # self.rewards.pen_joint_torque.weight = -2.0e-05
+        # self.rewards.pen_joint_pos_limits.weight = -1.0
 
-        self.rewards.foot_landing_vel.weight = 0.0
-        self.rewards.pen_feet_regulation.weight = 0.0
+        # self.rewards.test_gait_reward.weight = 1.0
+
+        # self.rewards.pen_feet_distance.weight = -100.0
+
+        # self.rewards.foot_landing_vel.weight = 0.0
+        # self.rewards.pen_feet_regulation.weight = 0.0
 
         
         # 设置楼梯地形 / Set up stairs terrain

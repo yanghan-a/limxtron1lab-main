@@ -251,7 +251,7 @@ STAIRS_TERRAINS_CFG = TerrainGeneratorCfg(
         # 金字塔楼梯 (40%占比) / Pyramid stairs (40% proportion)
         "pyramid_stairs": MeshPyramidStairsTerrainCfg(
             proportion=0.4,
-            step_height_range=(0.02, 0.15),    # 台阶高度范围 5-20cm / Step height range 5-20cm
+            step_height_range=(0.05, 0.20),    # 台阶高度范围 5-20cm / Step height range 5-20cm
             step_width=0.3,                    # 台阶宽度 30cm / Step width 30cm
             platform_width=3.0,                # 平台宽度 3m / Platform width 3m
             border_width=1.0,                  # 边界宽度 / Border width
@@ -261,7 +261,7 @@ STAIRS_TERRAINS_CFG = TerrainGeneratorCfg(
         # 倒金字塔楼梯 (40%占比) / Inverted pyramid stairs (40% proportion)
         "pyramid_stairs_inv": MeshInvertedPyramidStairsTerrainCfg(
             proportion=0.4,
-            step_height_range=(0.02, 0.15),    # 下降台阶 / Descending steps
+            step_height_range=(0.05, 0.20),    # 下降台阶 / Descending steps
             step_width=0.3,
             platform_width=3.0,
             border_width=1.0,
@@ -336,11 +336,11 @@ STAIRS_TERRAINS_PLAY_CFG = TerrainGeneratorCfg(
 # 注意：TerrainGenerator 会基于比例随机放置子地形；通过设定 num_rows=1、固定随机种子和较小列数，
 # 可以得到稳定的“走廊式”混合地形，包含：平地 → 斜坡 → 离散格子 → 楼梯（上下）等。
 MIXED_COURSE_TERRAINS_CFG = TerrainGeneratorCfg(
-    seed=123,
+    seed=42,
     size=(10.0, 10.0),            # 更大单元，保证过渡更明显
-    border_width=20.0,
-    num_rows=1,                   # 单行走廊
-    num_cols=6,                   # 6段连续地形
+    border_width=10.0,
+    num_rows=6,                   # 单行走廊
+    num_cols=1,                   # 6段连续地形
     horizontal_scale=0.1,
     vertical_scale=0.005,
     slope_threshold=0.75,
@@ -352,16 +352,16 @@ MIXED_COURSE_TERRAINS_CFG = TerrainGeneratorCfg(
             proportion=0.17, slope_range=(0.0, 0.4), platform_width=1.0, border_width=0.25
         ),
         "waves": HfWaveTerrainCfg(
-            proportion=0.16, amplitude_range=(0.01, 0.06), num_waves=8, border_width=0.25
+            proportion=0.16, amplitude_range=(0.01, 0.06), num_waves=20, border_width=0.25
         ),
         "boxes": MeshRandomGridTerrainCfg(
-            proportion=0.17, grid_width=0.20, grid_height_range=(0.01, 0.04), platform_width=2.0
+            proportion=0.17, grid_width=0.33, grid_height_range=(0.01, 0.04), platform_width=1.0
         ),
         "hf_pyramid_slope_inv": HfInvertedPyramidSlopedTerrainCfg(
             proportion=0.16, slope_range=(0.0, 0.4), platform_width=1.0, border_width=0.25
         ),
         "pyramid_stairs": MeshPyramidStairsTerrainCfg(
-            proportion=0.17, step_height_range=(0.02, 0.18), step_width=0.30, platform_width=1.0, border_width=0.8, holes=False
+            proportion=0.17, step_height_range=(0.02, 0.18), step_width=0.30, platform_width=2.0, border_width=0.8, holes=False
         ),
     },
     curriculum=True,               # 训练时启用课程学习

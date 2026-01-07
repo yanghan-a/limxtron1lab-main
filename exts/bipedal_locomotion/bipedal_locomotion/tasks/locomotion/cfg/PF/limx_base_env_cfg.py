@@ -401,101 +401,161 @@ class EventsCfg:
 class RewardsCfg:
     """奖励项配置类 - 定义强化学习的奖励函数 / Reward terms configuration class - defines RL reward functions"""
 
-    # 终止相关奖励 / Termination-related rewards
-    keep_balance = RewTerm(
-        func=mdp.stay_alive,    # 保持存活奖励 / Stay alive reward
-        weight=1.0              # 奖励权重 / Reward weight
-    )
+    # # 终止相关奖励 / Termination-related rewards
+    # keep_balance = RewTerm(
+    #     func=mdp.stay_alive,    # 保持存活奖励 / Stay alive reward
+    #     weight=1.0              # 奖励权重 / Reward weight
+    # )
 
-    # tracking related rewards
+    # # tracking related rewards
+    # rew_lin_vel_xy = RewTerm(
+    #     func=mdp.track_lin_vel_xy_exp, weight=3.0, params={"command_name": "base_velocity", "std": math.sqrt(0.2)}
+    # )
+    # rew_ang_vel_z = RewTerm(
+    #     func=mdp.track_ang_vel_z_exp, weight=1.5, params={"command_name": "base_velocity", "std": math.sqrt(0.2)}
+    # )
+
+    # # 调节相关奖励 / Regulation-related rewards
+    # pen_base_height = RewTerm(
+    #     func=mdp.base_com_height,                   # 基座高度惩罚 / Base height penalty
+    #     params={"target_height": 0.78},            # 目标高度 78cm / Target height 78cm
+    #     weight=-20.0,                               # 负权重表示惩罚 / Negative weight indicates penalty
+    # )
+    
+    # # 关节相关惩罚 / Joint-related penalties
+    # pen_lin_vel_z = RewTerm(func=mdp.lin_vel_z_l2, weight=-0.5)
+    # pen_ang_vel_xy = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.05)
+    # pen_joint_torque = RewTerm(func=mdp.joint_torques_l2, weight=-0.00008)
+    # pen_joint_accel = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-07)
+    # pen_action_rate = RewTerm(func=mdp.action_rate_l2, weight=-0.03)
+    # pen_joint_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-2.0)
+    # pen_joint_vel_l2 = RewTerm(func=mdp.joint_vel_l2, weight=-1e-03)
+    # pen_joint_powers = RewTerm(func=mdp.joint_powers_l1, weight=-5e-04)
+    
+    # pen_undesired_contacts = RewTerm(
+    #     func=mdp.undesired_contacts,                # 不期望接触惩罚 / Undesired contacts penalty
+    #     weight=-0.5,
+    #     params={
+    #         # 监控非足部的接触 / Monitor non-foot contacts
+    #         "sensor_cfg": SceneEntityCfg("contact_forces", body_names=["abad_.*", "hip_.*", "knee_.*", "base_Link"]),
+    #         "threshold": 10.0,                      # 接触力阈值 / Contact force threshold
+    #     },
+    # )
+
+    # pen_action_smoothness = RewTerm(
+    #     func=mdp.ActionSmoothnessPenalty,           # 动作平滑性惩罚 / Action smoothness penalty
+    #     weight=-0.04
+    # )
+    # pen_flat_orientation = RewTerm(
+    #     func=mdp.flat_orientation_l2,               # 平坦朝向L2惩罚 / Flat orientation L2 penalty
+    #     weight=-10.0
+    # )
+    # pen_feet_distance = RewTerm(
+    #     func=mdp.feet_distance,                     # 足部距离惩罚 / Foot distance penalty
+    #     weight=-100,
+    #     params={
+    #         "min_feet_distance": 0.115,            # 最小足部距离 / Minimum foot distance
+    #         "feet_links_name": ["foot_[RL]_Link"]  # 足部连杆名称 / Foot link names
+    #     }
+    # )
+    
+    # pen_feet_regulation = RewTerm(
+    #     func=mdp.feet_regulation,                   # 足部调节惩罚 / Foot regulation penalty
+    #     weight=-0.1,
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot", body_names=["foot_[RL]_Link"]),
+    #         "base_height_target": 0.65,            # 基座目标高度 / Base target height
+    #         "foot_radius": 0.03                    # 足部半径 / Foot radius
+    #     },
+    # )
+
+    # foot_landing_vel = RewTerm(
+    #     func=mdp.foot_landing_vel,                  # 足部着陆速度惩罚 / Foot landing velocity penalty
+    #     weight=-0.5,
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot", body_names=["foot_[RL]_Link"]),
+    #         "sensor_cfg": SceneEntityCfg("contact_forces", body_names=["foot_[RL]_Link"]),
+    #         "foot_radius": 0.03,
+    #         "about_landing_threshold": 0.08         # 即将着陆阈值 / About to land threshold
+    #     },
+    # )
+    
+    
+    # # 步态奖励 / Gait reward
+    # test_gait_reward = RewTerm(
+    #     func=mdp.GaitReward,                        # 步态奖励函数 / Gait reward function
+    #     weight=1.0,
+    #     params={
+    #         "tracking_contacts_shaped_force": -2.0,    # 接触力跟踪形状参数 / Contact force tracking shaping
+    #         "tracking_contacts_shaped_vel": -2.0,      # 接触速度跟踪形状参数 / Contact velocity tracking shaping
+    #         "gait_force_sigma": 25.0,                  # 步态力标准差 / Gait force sigma
+    #         "gait_vel_sigma": 0.25,                    # 步态速度标准差 / Gait velocity sigma
+    #         "kappa_gait_probs": 0.05,                  # 步态概率参数 / Gait probability parameter
+    #         "command_name": "gait_command",            # 命令名称 / Command name
+    #         "sensor_cfg": SceneEntityCfg("contact_forces", body_names="foot_.*"),
+    #         "asset_cfg": SceneEntityCfg("robot", body_names="foot_.*"),
+    #     },
+    # )
+
+    # rewards
     rew_lin_vel_xy = RewTerm(
-        func=mdp.track_lin_vel_xy_exp, weight=3.0, params={"command_name": "base_velocity", "std": math.sqrt(0.2)}
+        func=mdp.track_lin_vel_xy_exp, weight=1.5, params={"command_name": "base_velocity", "std": math.sqrt(0.25)}
     )
     rew_ang_vel_z = RewTerm(
-        func=mdp.track_ang_vel_z_exp, weight=1.5, params={"command_name": "base_velocity", "std": math.sqrt(0.2)}
+        func=mdp.track_ang_vel_z_exp, weight=0.75, params={"command_name": "base_velocity", "std": math.sqrt(0.25)}
     )
-
-    # 调节相关奖励 / Regulation-related rewards
-    pen_base_height = RewTerm(
-        func=mdp.base_com_height,                   # 基座高度惩罚 / Base height penalty
-        params={"target_height": 0.78},            # 目标高度 78cm / Target height 78cm
-        weight=-20.0,                               # 负权重表示惩罚 / Negative weight indicates penalty
-    )
-    
-    # 关节相关惩罚 / Joint-related penalties
-    pen_lin_vel_z = RewTerm(func=mdp.lin_vel_z_l2, weight=-0.5)
-    pen_ang_vel_xy = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.05)
-    pen_joint_torque = RewTerm(func=mdp.joint_torques_l2, weight=-0.00008)
-    pen_joint_accel = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-07)
-    pen_action_rate = RewTerm(func=mdp.action_rate_l2, weight=-0.03)
-    pen_joint_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-2.0)
-    pen_joint_vel_l2 = RewTerm(func=mdp.joint_vel_l2, weight=-1e-03)
-    pen_joint_powers = RewTerm(func=mdp.joint_powers_l1, weight=-5e-04)
-    
-    pen_undesired_contacts = RewTerm(
-        func=mdp.undesired_contacts,                # 不期望接触惩罚 / Undesired contacts penalty
-        weight=-0.5,
-        params={
-            # 监控非足部的接触 / Monitor non-foot contacts
-            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=["abad_.*", "hip_.*", "knee_.*", "base_Link"]),
-            "threshold": 10.0,                      # 接触力阈值 / Contact force threshold
-        },
-    )
-
-    pen_action_smoothness = RewTerm(
-        func=mdp.ActionSmoothnessPenalty,           # 动作平滑性惩罚 / Action smoothness penalty
-        weight=-0.04
-    )
-    pen_flat_orientation = RewTerm(
-        func=mdp.flat_orientation_l2,               # 平坦朝向L2惩罚 / Flat orientation L2 penalty
-        weight=-10.0
-    )
-    pen_feet_distance = RewTerm(
-        func=mdp.feet_distance,                     # 足部距离惩罚 / Foot distance penalty
-        weight=-100,
-        params={
-            "min_feet_distance": 0.115,            # 最小足部距离 / Minimum foot distance
-            "feet_links_name": ["foot_[RL]_Link"]  # 足部连杆名称 / Foot link names
-        }
-    )
-    
-    pen_feet_regulation = RewTerm(
-        func=mdp.feet_regulation,                   # 足部调节惩罚 / Foot regulation penalty
-        weight=-0.1,
-        params={
-            "asset_cfg": SceneEntityCfg("robot", body_names=["foot_[RL]_Link"]),
-            "base_height_target": 0.65,            # 基座目标高度 / Base target height
-            "foot_radius": 0.03                    # 足部半径 / Foot radius
-        },
-    )
-
-    foot_landing_vel = RewTerm(
-        func=mdp.foot_landing_vel,                  # 足部着陆速度惩罚 / Foot landing velocity penalty
-        weight=-0.5,
-        params={
-            "asset_cfg": SceneEntityCfg("robot", body_names=["foot_[RL]_Link"]),
-            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=["foot_[RL]_Link"]),
-            "foot_radius": 0.03,
-            "about_landing_threshold": 0.08         # 即将着陆阈值 / About to land threshold
-        },
-    )
-    
-    
-    # 步态奖励 / Gait reward
-    test_gait_reward = RewTerm(
-        func=mdp.GaitReward,                        # 步态奖励函数 / Gait reward function
+    rew_no_fly = RewTerm(
+        func=mdp.no_fly,
         weight=1.0,
         params={
-            "tracking_contacts_shaped_force": -2.0,    # 接触力跟踪形状参数 / Contact force tracking shaping
-            "tracking_contacts_shaped_vel": -2.0,      # 接触速度跟踪形状参数 / Contact velocity tracking shaping
-            "gait_force_sigma": 25.0,                  # 步态力标准差 / Gait force sigma
-            "gait_vel_sigma": 0.25,                    # 步态速度标准差 / Gait velocity sigma
-            "kappa_gait_probs": 0.05,                  # 步态概率参数 / Gait probability parameter
-            "command_name": "gait_command",            # 命令名称 / Command name
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*foot_[LR]_Link"),
+            "threshold": 5.0,
+        },
+    )
+
+    # penalizations
+    pen_undesired_contacts = RewTerm(
+        func=mdp.undesired_contacts,
+        weight=-0.5,
+        params={
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=["abad_.*", "hip_.*", "knee_.*", "base_Link"]),
+            "threshold": 10.0,
+        },
+    )
+    pen_lin_vel_z = RewTerm(func=mdp.lin_vel_z_l2, weight=-0.5)
+    pen_ang_vel_xy = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.05)
+    pen_action_rate = RewTerm(func=mdp.action_rate_l2, weight=-0.01)
+    pen_action_smoothness = RewTerm(func=mdp.ActionSmoothnessPenalty, weight=-0.01)
+    pen_flat_orientation = RewTerm(func=mdp.flat_orientation_l2, weight=-1.0)
+    pen_joint_vel_l2 = RewTerm(func=mdp.joint_vel_l2, weight=-5.0e-05)
+    pen_joint_accel = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-07)
+    pen_joint_powers = RewTerm(func=mdp.joint_powers_l1, weight=-2.0e-05)
+    pen_base_height = RewTerm(
+        func=mdp.base_com_height,
+        params={
+            "target_height": 0.78,
+        },
+        weight=-1.0,
+    )
+    pen_joint_torque = RewTerm(func=mdp.joint_torques_l2, weight=-2.0e-05)
+    pen_joint_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-1.0)
+
+    # Gait reward
+    test_gait_reward = RewTerm(
+        func=mdp.GaitReward,
+        weight=1.0,
+        params={
+            "tracking_contacts_shaped_force": -1.0,
+            "tracking_contacts_shaped_vel": -1.0,
+            "gait_force_sigma": 25.0,
+            "gait_vel_sigma": 0.25,
+            "kappa_gait_probs": 0.05,
+            "command_name": "gait_command",
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names="foot_.*"),
             "asset_cfg": SceneEntityCfg("robot", body_names="foot_.*"),
         },
     )
+    
 
 
 @configclass
