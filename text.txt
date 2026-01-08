@@ -1,0 +1,30 @@
+https://github.com/zhangzhiyi22/limxtron1lab-main
+
+https://github.com/limxdynamics/tron1-rl-isaaclab
+
+[{"type": "command","details": {"key": "python.launchTensorBoard"}}]
+
+tensorboard --logdir logs
+
+python3 scripts/rsl_rl/train.py    --task=Isaac-Limx-PF-Blind-Rough-v0  --resume=True  --headless --checkpoint_path=logs/rsl_rl/pf_tron_1a_flat/2025-12-26_13-56-30/model_3000.pt
+
+
+python3 scripts/rsl_rl/play-keyboard.py --task=Isaac-Limx-PF-Blind-Rough-Play-v0 --num_envs=1 --checkpoint_path=logs/rsl_rl/pf_tron_1a_rough/2026-01-05_15-22-57/model_1500.pt 
+
+train:
+stairs
+python3 scripts/rsl_rl/train.py    --task=Isaac-Limx-PF-Blind-Stairs-v1  --resume=True  --headless --checkpoint_path=logs/rsl_rl/pf_tron_1a_stair_my/2026-01-06_22-01-35/model_8400.pt  --num_envs=8192
+
+
+
+test:
+rough/flat
+python3 scripts/rsl_rl/play-keyboard.py --task=Isaac-Limx-PF-Blind-Rough-Play-v0 --num_envs=1 --checkpoint_path=logs/rsl_rl/pf_tron_1a_rough/2026-01-05_13-30-12/model_2100.pt 
+
+flat
+python3 scripts/rsl_rl/play-keyboard.py --task=Isaac-Limx-PF-Blind-Flat-Play-v0 --num_envs=1 --checkpoint_path=logs/rsl_rl/pf_tron_1a_flat/2025-12-26_13-56-30/model_3000.pt
+
+
+stairs
+python3 scripts/rsl_rl/play-keyboard.py --task=Isaac-Limx-PF-Blind-Stairs-Play-v1 --num_envs=1  --checkpoint_path=logs/rsl_rl/pf_tron_1a_stair_my/2026-01-06_22-01-35/model_8400.pt 
+

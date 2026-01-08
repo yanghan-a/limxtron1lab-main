@@ -386,7 +386,7 @@ def main():
             for ax in axs1:
                 ax.axvline(t, color="red", linestyle="--", alpha=0.6, label=label)
         fig1.tight_layout()
-        vel_path = os.path.join(out_dir, "forcetest_velocities.png")
+        vel_path = os.path.join(out_dir, "forcetest_velocities1.png")
         fig1.savefig(vel_path, dpi=150)
         plt.close(fig1)
 
@@ -407,7 +407,7 @@ def main():
         axs2[3].legend(loc="upper right")
         fig2.suptitle("Applied External Force (forcetest)")
         fig2.tight_layout()
-        force_path = os.path.join(out_dir, "forcetest_forces.png")
+        force_path = os.path.join(out_dir, "forcetest_forces1.png")
         fig2.savefig(force_path, dpi=150)
         plt.close(fig2)
 
