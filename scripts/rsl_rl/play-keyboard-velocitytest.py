@@ -42,6 +42,7 @@ import os
 import torch
 import numpy as np
 import time
+import matplotlib.pyplot as plt
 
 from rsl_rl.runner import OnPolicyRunner
 
@@ -68,49 +69,12 @@ from bipedal_locomotion.utils.wrappers.rsl_rl import RslRlPpoAlgorithmMlpCfg, ex
 # print("K     : 复位键盘输入 (Reset Input)")
 # print("=" * 50 + "\n")
 
-class ManualController:
-    """Manual controller for robot using WASD keys."""
-    
-    def __init__(self, device="cuda"):
-        self.device = device
-        self.linear_velocity = torch.zeros(3, device=device)
-        self.angular_velocity = torch.zeros(3, device=device)
-        self.max_linear_vel = 0.6
-        self.max_angular_vel = 0.6
-        
-    def get_velocity_command(self):
-        """Return SE2 command [vx, vy, wz] in robot base frame."""
-        return torch.tensor(
-            [self.linear_velocity[0].item(), self.linear_velocity[1].item(), self.angular_velocity[2].item()],
-            device=self.device,
-            dtype=torch.float32,
-        )
-    
-    def update_from_keys(self, keys_pressed):
-        """Update velocity based on pressed keys."""
-        # Reset velocities
-        self.linear_velocity.zero_()
-        self.angular_velocity.zero_()
-        
-        # WASD control
-        if 'w' in keys_pressed:
-            self.linear_velocity[0] = self.max_linear_vel  # Forward
-        if 's' in keys_pressed:
-            self.linear_velocity[0] = -self.max_linear_vel  # Backward
-        if 'a' in keys_pressed:
-            self.linear_velocity[1] = self.max_linear_vel  # Left
-        if 'd' in keys_pressed:
-            self.linear_velocity[1] = -self.max_linear_vel  # Right
-            
-        # QE for rotation
-        if 'q' in keys_pressed:
-            self.angular_velocity[2] = self.max_angular_vel  # Turn left
-        if 'e' in keys_pressed:
-            self.angular_velocity[2] = -self.max_angular_vel  # Turn right
-
-        if 'k' in keys_pressed:
-            self.linear_velocity.zero_()
-            self.angular_velocity.zero_()
+"""
+改造说明：
+- 移除键盘控制，改为自动随机指令。
+- 持续 60s 仿真，每 5s 采样一次新的随机速度指令：vx, vy, wz ∈ U(-1.2, 1.2)。
+- 记录期望与实际速度（基座坐标系）并在结束后绘图保存。
+"""
 
 class CameraController:
     """Camera controller to follow the robot (no external deps)."""
@@ -209,33 +173,17 @@ def main():
             ppo_runner.alg.encoder.num_input_dim,
         )
 
-    # Initialize manual controller and camera controller
-    manual_controller = ManualController(device=env.unwrapped.device)
+    # Initialize camera controller
     camera_controller = CameraController(env)
-
-    # Get keyboard input handler
-    try:
-        import keyboard
-        print("[INFO] Keyboard input enabled. Use WASD/QE to control the robot (ESC to exit)")
-    except ImportError:
-        print("[WARNING] keyboard module not available. Install with: pip install keyboard")
-        print("[INFO] Using default policy control instead.")
-        keyboard = None
-    except Exception as e:
-        print(f"[ERROR] Keyboard initialization failed: {e}")
-        print("[INFO] Using default policy control instead.")
-        keyboard = None
 
     timestep = 0
     
-    # Initialize push force tracking variables
-    push_start_time = None
-    push_force_vector = None
-    total_impulse = 0.0
-    is_pushing = False
-    
     # Initialize velocity tracking for MSE calculation
     velocity_errors_squared = []
+    # Time-series logging for plotting
+    t_series = []
+    des_vx_series, des_vy_series, des_wz_series = [], [], []
+    act_vx_series, act_vy_series, act_wz_series = [], [], []
     
     # Initialize loop timing measurement
     loop_times = []
@@ -245,7 +193,33 @@ def main():
     obs, obs_dict = env.get_observations()
     obs_history = obs_dict["observations"].get("obsHistory")
     obs_history = obs_history.flatten(start_dim=1)
-    commands = obs_dict["observations"].get("commands") 
+    commands = obs_dict["observations"].get("commands")
+
+    # Command scheduling
+    duration_s = 60.0
+    change_period_s = 5.0
+    start_time = time.time()
+    next_change_time = start_time
+
+    # Prepare command manager term (base_velocity)
+    cmd_term = env.unwrapped.command_manager.get_term("base_velocity")
+    # Initialize first command immediately
+    rng = np.random.default_rng()
+    def sample_cmd():
+        return np.array([
+            rng.uniform(-1.2, 1.2),  # vx
+            rng.uniform(-1.2, 1.2),  # vy
+            rng.uniform(-1.2, 1.2),  # wz
+        ], dtype=np.float32)
+
+    current_cmd_np = sample_cmd()
+    current_cmd = torch.tensor(current_cmd_np, device=env.unwrapped.device, dtype=torch.float32)
+    # broadcast to all envs for command manager
+    cmd_term.vel_command_b[:] = current_cmd.unsqueeze(0).repeat(env.num_envs, 1)
+    # also update the commands tensor fed to policy
+    commands = commands.clone()
+    commands[:, :3] = current_cmd.unsqueeze(0)
+
     # simulate environment
     while simulation_app.is_running():
         # Measure loop timing
@@ -254,92 +228,21 @@ def main():
         loop_times.append(loop_dt)
         last_loop_time = current_time
 
-        # Check for exit
-        if keyboard and keyboard.is_pressed('esc'):
-            print("[INFO] ESC pressed, exiting...")
+        # Stop condition: run for duration_s seconds
+        if (current_time - start_time) >= duration_s:
+            print(f"[INFO] Reached {duration_s:.1f}s, stopping simulation loop.")
             break
-            
-        # Get current key presses
-        keys_pressed = []
-        push_robot = False
-        if keyboard:
-            if keyboard.is_pressed('w'):
-                keys_pressed.append('w')
-            if keyboard.is_pressed('s'):
-                keys_pressed.append('s')
-            if keyboard.is_pressed('a'):
-                keys_pressed.append('a')
-            if keyboard.is_pressed('d'):
-                keys_pressed.append('d')
-            if keyboard.is_pressed('q'):
-                keys_pressed.append('q')
-            if keyboard.is_pressed('e'):
-                keys_pressed.append('e')
-            if keyboard.is_pressed('p'):
-                push_robot = True
-        
-        # Update manual controller
-        if keyboard:
-            manual_controller.update_from_keys(keys_pressed)
-            # Override the command in the environment (expects [vx, vy, wz])
-            velocity_cmd = manual_controller.get_velocity_command()
 
-            cmd_term = env.unwrapped.command_manager.get_term("base_velocity")
-            # broadcast to all envs
-            cmd_term.vel_command_b[:] = velocity_cmd.unsqueeze(0).repeat(env.num_envs, 1)
-            # ensure angular velocity mode (not heading) and not standing
-            # if hasattr(cmd_term, "is_heading_env"):
-            #     cmd_term.is_heading_env[:] = False
-            # if hasattr(cmd_term, "is_standing_env"):
-            #     cmd_term.is_standing_env[:] = False
-            
-            # [关键修改] 将键盘指令直接写入策略网络的输入张量
-            # [Key Fix] Clone the commands tensor to make it writable, then overwrite
+        # Change command every change_period_s seconds
+        if current_time >= next_change_time:
+            current_cmd_np = sample_cmd()
+            current_cmd = torch.tensor(current_cmd_np, device=env.unwrapped.device, dtype=torch.float32)
+            # apply to env command manager and policy input
+            cmd_term.vel_command_b[:] = current_cmd.unsqueeze(0).repeat(env.num_envs, 1)
             commands = commands.clone()
-            commands[:, :3] = velocity_cmd.unsqueeze(0)
+            commands[:, :3] = current_cmd.unsqueeze(0)
+            next_change_time += change_period_s
 
-        # Apply external force when 'p' is pressed
-        if push_robot:
-            if not is_pushing:
-                # Start of push - initialize tracking
-                is_pushing = True
-                push_start_time = time.time()
-                total_impulse = 0.0
-                # Generate random direction (unit vector)
-                random_direction = torch.randn(3, device=env.unwrapped.device)
-                random_direction = random_direction / torch.norm(random_direction)  # normalize to unit vector
-                # Scale to 200N
-                force_magnitude = 50.0
-                push_force_vector = random_direcition * force_magnitude
-                print(f"[INFO] Started applying 200N force: direction={push_force_vector.cpu().numpy()}")
-            
-            # Continue applying force (only if push_force_vector is initialized)
-            if push_force_vector is not None:
-                robot = env.unwrapped.scene["robot"]
-                forces = torch.zeros(env.num_envs, robot.num_bodies, 3, device=env.unwrapped.device)
-                forces[:, 0, :] = push_force_vector  # Apply to base link
-                torques = torch.zeros_like(forces)
-                robot.set_external_force_and_torque(forces, torques)
-                
-                # Accumulate impulse (Impulse = Force × dt)
-                dt = env.unwrapped.physics_dt  # Physics timestep
-                impulse_this_step = torch.norm(push_force_vector).item() * dt
-                total_impulse += impulse_this_step
-            
-        else:
-            if is_pushing:
-                # End of push - print results
-                push_duration = time.time() - push_start_time if push_start_time is not None else 0.0
-                print(f"[INFO] Push ended. Duration: {push_duration:.3f}s, Total Impulse: {total_impulse:.2f} N·s")
-                is_pushing = False
-                push_force_vector = None
-
-                # Explicitly clear external forces
-                robot = env.unwrapped.scene["robot"]
-                forces = torch.zeros(env.num_envs, robot.num_bodies, 3, device=env.unwrapped.device)
-                torques = torch.zeros_like(forces)
-                robot.set_external_force_and_torque(forces, torques)
-                print("[INFO] External forces cleared")
 
         # run everything in inference mode
         with torch.inference_mode():
@@ -399,7 +302,6 @@ def main():
             actual_ang_vel = actual_ang_vel_w  # Angular velocity around z is same in both frames
         
         # Desired velocity from commands (first env, already in base frame)
-
         desired_vel = commands[0, :3]  # [vx_des, vy_des, wz_des] in base frame
         desired_lin_vel = desired_vel[:2]
         desired_ang_vel = desired_vel[2]
@@ -415,16 +317,23 @@ def main():
         
         velocity_errors_squared.append(total_vel_mse)
         
-        # Print velocity tracking info every 100 steps
+        # Log time-series for plotting
+        t_series.append(current_time - start_time)
+        des_vx_series.append(desired_lin_vel[0].item())
+        des_vy_series.append(desired_lin_vel[1].item())
+        des_wz_series.append(desired_ang_vel.item())
+        act_vx_series.append(actual_lin_vel[0].item())
+        act_vy_series.append(actual_lin_vel[1].item())
+        act_wz_series.append(actual_ang_vel.item())
+
+        # Print velocity tracking info every ~0.5s（根据步频估计）
         if timestep % 10 == 0:
             avg_mse = np.mean(velocity_errors_squared[-50:]) if len(velocity_errors_squared) >= 50 else np.mean(velocity_errors_squared)
             avg_loop_time = np.mean(loop_times[-100:]) if len(loop_times) >= 100 else np.mean(loop_times)
             avg_loop_freq = 1.0 / avg_loop_time if avg_loop_time > 0 else 0
-            
             print(f"\n[Step {timestep}] Velocity Tracking:")
             print(f"  Desired: vx={desired_vel[0].item():.3f}, vy={desired_vel[1].item():.3f}, wz={desired_vel[2].item():.3f}")
             print(f"  Actual:  vx={actual_lin_vel[0].item():.3f}, vy={actual_lin_vel[1].item():.3f}, wz={actual_ang_vel.item():.3f}")
-            print(f"  Error:   vx={lin_vel_error[0].item():.3f}, vy={lin_vel_error[1].item():.3f}, wz={ang_vel_error.item():.3f}")
             print(f"  MSE (last 50 steps): {avg_mse:.6f}")
             print(f"  Loop timing: {avg_loop_time*1000:.2f}ms ({avg_loop_freq:.1f} Hz)")
         
@@ -449,6 +358,35 @@ def main():
         print(f"  Control decimation: {env.unwrapped.cfg.decimation}")
         print(f"  Control dt: {env.unwrapped.step_dt*1000:.2f}ms ({1.0/env.unwrapped.step_dt:.1f} Hz)")
         print(f"{'='*60}\n")
+
+    # Plot and save figure for desired vs actual velocities
+    try:
+        save_dir = os.path.join(os.path.dirname(log_dir), "velocitytest") if 'log_dir' in locals() else "./logs/velocitytest"
+        os.makedirs(save_dir, exist_ok=True)
+        fig, axs = plt.subplots(3, 1, figsize=(10, 8), sharex=True)
+        axs[0].plot(t_series, des_vx_series, label="vx_des")
+        axs[0].plot(t_series, act_vx_series, label="vx_act", linestyle="--")
+        axs[0].set_ylabel("vx [m/s]")
+        axs[0].legend(loc="upper right")
+
+        axs[1].plot(t_series, des_vy_series, label="vy_des")
+        axs[1].plot(t_series, act_vy_series, label="vy_act", linestyle="--")
+        axs[1].set_ylabel("vy [m/s]")
+        axs[1].legend(loc="upper right")
+
+        axs[2].plot(t_series, des_wz_series, label="wz_des")
+        axs[2].plot(t_series, act_wz_series, label="wz_act", linestyle="--")
+        axs[2].set_ylabel("wz [rad/s]")
+        axs[2].set_xlabel("time [s]")
+        axs[2].legend(loc="upper right")
+
+        fig.suptitle("Velocity Tracking (cmd vs actual)")
+        fig.tight_layout(rect=(0.0, 0.03, 1.0, 0.95))
+        save_path = os.path.join(save_dir, "velocity_tracking.png")
+        plt.savefig(save_path, dpi=150)
+        print(f"[INFO] Saved velocity tracking plot to: {os.path.abspath(save_path)}")
+    except Exception as e:
+        print(f"[WARN] Failed to save plot: {e}")
 
     # close the simulator
     env.close()
