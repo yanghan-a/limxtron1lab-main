@@ -190,8 +190,8 @@ def main():
 
     # Force test scheduling (no velocity commands)
     duration_s = 90.0              # total duration 90s
-    push_interval_s = 5.0          # apply a force every 5s
-    push_duration_s = 0.5          # each force lasts 0.5s
+    push_interval_s = 6.0          # apply a force every 5s
+    push_duration_s = 0.8          # each force lasts 0.5s
     start_time = time.time()
     next_push_time = start_time + push_interval_s  # first push at 5s
     is_pushing = False
@@ -239,7 +239,7 @@ def main():
                 direction = np.array([1.0, 0.0, 0.0])
             else:
                 direction = direction / norm
-            magnitude = rng.uniform(0.0, 100.0)  # [0, 100] N
+            magnitude = rng.uniform(100.0, 200.0)  # [0, 100] N
             push_force_vector = torch.tensor(direction * magnitude, device=env.unwrapped.device, dtype=torch.float32)
             is_pushing = True
             push_end_time = current_time + push_duration_s
