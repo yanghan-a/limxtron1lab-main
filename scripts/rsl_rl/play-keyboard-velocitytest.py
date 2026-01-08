@@ -196,23 +196,24 @@ def main():
     commands = obs_dict["observations"].get("commands")
 
     # Command scheduling
-    duration_s = 60.0
-    change_period_s = 5.0
+    duration_s = 120.0
+    change_period_s = 8.0
+    warmup_period_s = 8.0  # wait 8s before sending any non-zero command
     start_time = time.time()
-    next_change_time = start_time
+    next_change_time = start_time + warmup_period_s
 
     # Prepare command manager term (base_velocity)
     cmd_term = env.unwrapped.command_manager.get_term("base_velocity")
-    # Initialize first command immediately
+    # Initialize with zero command during warmup
     rng = np.random.default_rng()
     def sample_cmd():
         return np.array([
-            rng.uniform(-1.2, 1.2),  # vx
-            rng.uniform(-1.2, 1.2),  # vy
-            rng.uniform(-1.2, 1.2),  # wz
+            rng.uniform(-1.0, 1.0),  # vx
+            rng.uniform(-1.0, 1.0),  # vy
+            rng.uniform(-1.0, 1.0),  # wz
         ], dtype=np.float32)
 
-    current_cmd_np = sample_cmd()
+    current_cmd_np = np.array([0.0, 0.0, 0.0], dtype=np.float32)
     current_cmd = torch.tensor(current_cmd_np, device=env.unwrapped.device, dtype=torch.float32)
     # broadcast to all envs for command manager
     cmd_term.vel_command_b[:] = current_cmd.unsqueeze(0).repeat(env.num_envs, 1)
@@ -276,30 +277,7 @@ def main():
             # Direct access to base-frame velocities
             actual_lin_vel = robot.data.root_lin_vel_b[0, :2]  # [vx_b, vy_b] in base frame
             actual_ang_vel = robot.data.root_ang_vel_b[0, 2]   # wz in base frame
-        else:
-            # Manual transformation from world to base frame
-            # Get velocity in world frame
-            actual_lin_vel_w = robot.data.root_lin_vel_w[0, :2]  # [vx_w, vy_w] in world frame
-            actual_ang_vel_w = robot.data.root_ang_vel_w[0, 2]   # wz in world frame (same in both frames for yaw)
-            
-            # Get robot orientation (quaternion [w, x, y, z])
-            quat_w = robot.data.root_quat_w[0]  # quaternion in world frame
-            
-            # Convert linear velocity from world frame to base frame
-            # Extract yaw angle from quaternion
-            w, x, y, z = quat_w[0], quat_w[1], quat_w[2], quat_w[3]
-            yaw = torch.atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z))
-            
-            # Rotation matrix from world to base frame (2D rotation around z-axis)
-            cos_yaw = torch.cos(yaw)
-            sin_yaw = torch.sin(yaw)
-            
-            # Transform velocity: v_base = R^T * v_world
-            actual_lin_vel = torch.stack([
-                cos_yaw * actual_lin_vel_w[0] + sin_yaw * actual_lin_vel_w[1],  # vx in base frame
-                -sin_yaw * actual_lin_vel_w[0] + cos_yaw * actual_lin_vel_w[1]  # vy in base frame
-            ])
-            actual_ang_vel = actual_ang_vel_w  # Angular velocity around z is same in both frames
+
         
         # Desired velocity from commands (first env, already in base frame)
         desired_vel = commands[0, :3]  # [vx_des, vy_des, wz_des] in base frame
@@ -359,23 +337,46 @@ def main():
         print(f"  Control dt: {env.unwrapped.step_dt*1000:.2f}ms ({1.0/env.unwrapped.step_dt:.1f} Hz)")
         print(f"{'='*60}\n")
 
-    # Plot and save figure for desired vs actual velocities
+    # Plot and save figure for desired vs actual velocities (smoothed actuals)
     try:
+        # estimate dt for smoothing
+        if len(t_series) > 1:
+            dt_est = float(np.mean(np.diff(t_series)))
+        elif len(loop_times) > 0:
+            dt_est = float(np.mean(loop_times))
+        else:
+            dt_est = 0.01
+        if not np.isfinite(dt_est) or dt_est <= 0:
+            dt_est = 0.01
+
+        def lowpass(series, dt, tau=0.2):
+            if len(series) == 0:
+                return series
+            alpha = dt / (tau + dt)
+            y = [series[0]]
+            for i in range(1, len(series)):
+                y.append(y[-1] + alpha * (series[i] - y[-1]))
+            return y
+
+        act_vx_sm = lowpass(act_vx_series, dt_est)
+        act_vy_sm = lowpass(act_vy_series, dt_est)
+        act_wz_sm = lowpass(act_wz_series, dt_est)
+
         save_dir = os.path.join(os.path.dirname(log_dir), "velocitytest") if 'log_dir' in locals() else "./logs/velocitytest"
         os.makedirs(save_dir, exist_ok=True)
         fig, axs = plt.subplots(3, 1, figsize=(10, 8), sharex=True)
         axs[0].plot(t_series, des_vx_series, label="vx_des")
-        axs[0].plot(t_series, act_vx_series, label="vx_act", linestyle="--")
+        axs[0].plot(t_series, act_vx_sm, label="vx_act (sm)", linestyle="--")
         axs[0].set_ylabel("vx [m/s]")
         axs[0].legend(loc="upper right")
 
         axs[1].plot(t_series, des_vy_series, label="vy_des")
-        axs[1].plot(t_series, act_vy_series, label="vy_act", linestyle="--")
+        axs[1].plot(t_series, act_vy_sm, label="vy_act (sm)", linestyle="--")
         axs[1].set_ylabel("vy [m/s]")
         axs[1].legend(loc="upper right")
 
         axs[2].plot(t_series, des_wz_series, label="wz_des")
-        axs[2].plot(t_series, act_wz_series, label="wz_act", linestyle="--")
+        axs[2].plot(t_series, act_wz_sm, label="wz_act (sm)", linestyle="--")
         axs[2].set_ylabel("wz [rad/s]")
         axs[2].set_xlabel("time [s]")
         axs[2].legend(loc="upper right")
