@@ -210,6 +210,7 @@ def main():
     fy_hist: list[float] = []
     fz_hist: list[float] = []
     fmag_hist: list[float] = []
+    reset_times: list[float] = []  # timestamps when env resets (e.g., robot fell)
 
     # Low-pass filter states (first-order) for velocities
     tau = 0.2  # seconds
@@ -267,10 +268,33 @@ def main():
             est = encoder(obs_history)
             actions = policy(torch.cat((est, obs, commands), dim=-1).detach())
             # env stepping
-            obs, _, _, infos = env.step(actions)
+            obs, _, dones, infos = env.step(actions)
             obs_history = infos["observations"].get("obsHistory")
             obs_history = obs_history.flatten(start_dim=1)
             commands = infos["observations"].get("commands")
+
+        # If any environment reset occurred, record the timestamp
+        try:
+            if hasattr(dones, "any"):
+                any_reset = bool(dones.any())
+            else:
+                any_reset = np.any(dones)
+            if any_reset:
+                reset_times.append(current_time - start_time)
+        except Exception:
+            # Fallback: check info dict for reset flags if available
+            if isinstance(infos, dict):
+                flag = False
+                for k in ("resets", "reset", "terminated", "done"):
+                    v = infos.get(k, None)
+                    try:
+                        if v is not None and (np.any(v) or (hasattr(v, "any") and v.any())):
+                            flag = True
+                            break
+                    except Exception:
+                        pass
+                if flag:
+                    reset_times.append(current_time - start_time)
         
         # Record velocities (base frame) and applied force for plotting
         # Compute current time since start
@@ -351,6 +375,16 @@ def main():
         axs1[2].set_xlabel("time [s]")
         axs1[2].legend(loc="upper right")
         fig1.suptitle("Filtered Base-frame Velocities (forcetest)")
+        # Mark resets with vertical dashed lines
+        first = True
+        for t in reset_times:
+            if first:
+                label = "reset"
+                first = False
+            else:
+                label = None
+            for ax in axs1:
+                ax.axvline(t, color="red", linestyle="--", alpha=0.6, label=label)
         fig1.tight_layout()
         vel_path = os.path.join(out_dir, "forcetest_velocities.png")
         fig1.savefig(vel_path, dpi=150)
